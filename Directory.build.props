@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--                           -->
+  <!-- Common project properties -->
+  <!--                           -->
+
+  <PropertyGroup>
+    <LangVersion>10.0</LangVersion>
+    <nullable>Enable</nullable>
+    <Deterministic>True</Deterministic>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- <ImplicitUsings>enable</ImplicitUsings> -->
+
+    <UseMaui>true</UseMaui>
+    <!-- Configures 'Platforms' folder and *.iOS.cs/*.Android.cs/etc file conventions -->
+    <SingleProject>true</SingleProject>
+    <!-- Required for C# Hot Reload -->
+    <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Net.Http" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+    <Using Include="Microsoft.Maui" />
+    <Using Include="Microsoft.Maui.Controls" />
+    <Using Include="Microsoft.Maui.Essentials" />
+    <Using Include="Microsoft.Maui.Graphics" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Adhoc>false</Adhoc>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Adhoc)' == 'true'">
+    <DefineConstants>$(DefineConstants);ADHOC</DefineConstants>
+  </PropertyGroup>
+
+  <!--            -->
+  <!-- iOS config -->
+  <!--            -->
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios'">
+    <SupportedOSPlatformVersion>14.5</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <!--                -->
+  <!-- Android config -->
+  <!--                -->
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
+    <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+</Project>
