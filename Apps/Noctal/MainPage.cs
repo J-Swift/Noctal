@@ -2,16 +2,34 @@
 
 public class MainPage : ContentPage
 {
+    private record FeedItem(string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments);
     public MainPage()
     {
         var cv = new CollectionView();
 
         cv.ItemsSource = new[] {
-            "A", "B", "C", "D", "E", "F", "G", "H",
-            "A", "B", "C", "D", "E", "F", "G", "H",
-            "A", "B", "C", "D", "E", "F", "G", "H",
+            new FeedItem("redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
+            new FeedItem("thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
+            new FeedItem("meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
+            new FeedItem("redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
+            new FeedItem("thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
+            new FeedItem("meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
+            new FeedItem("redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
+            new FeedItem("thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
+            new FeedItem("meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
+            new FeedItem("redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
+            new FeedItem("thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
+            new FeedItem("meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
         };
-        cv.ItemTemplate = new DataTemplate(() => new FeedCell());
+        var dt = new DataTemplate(() => new FeedCell());
+        dt.SetBinding(FeedCell.UrlTextProperty, nameof(FeedItem.Url));
+        dt.SetBinding(FeedCell.ArticleTitleProperty, nameof(FeedItem.Title));
+        dt.SetBinding(FeedCell.SubmitterNameProperty, nameof(FeedItem.Submitter));
+        dt.SetBinding(FeedCell.TimeAgoProperty, nameof(FeedItem.TimeAgo));
+        dt.SetBinding(FeedCell.ScoreProperty, nameof(FeedItem.Score));
+        dt.SetBinding(FeedCell.NumCommentsProperty, nameof(FeedItem.NumComments));
+        cv.ItemTemplate = dt;
+
         var g = new Grid();
         g.Add(cv);
         Content = g;
@@ -19,6 +37,49 @@ public class MainPage : ContentPage
 
     private class FeedCell : ContentView
     {
+        public static readonly BindableProperty UrlTextProperty = BindableProperty.Create(nameof(UrlText), typeof(string), typeof(FeedCell), "");
+        public static readonly BindableProperty ArticleTitleProperty = BindableProperty.Create(nameof(ArticleTitle), typeof(string), typeof(FeedCell), "");
+        public static readonly BindableProperty SubmitterNameProperty = BindableProperty.Create(nameof(SubmitterName), typeof(string), typeof(FeedCell), "");
+        public static readonly BindableProperty TimeAgoProperty = BindableProperty.Create(nameof(TimeAgo), typeof(string), typeof(FeedCell), "");
+        public static readonly BindableProperty ScoreProperty = BindableProperty.Create(nameof(Score), typeof(int), typeof(FeedCell), 0);
+        public static readonly BindableProperty NumCommentsProperty = BindableProperty.Create(nameof(NumComments), typeof(int), typeof(FeedCell), 0);
+
+        public string UrlText
+        {
+            get { return (string)GetValue(UrlTextProperty); }
+            set { SetValue(UrlTextProperty, value); }
+        }
+
+        public string ArticleTitle
+        {
+            get { return (string)GetValue(ArticleTitleProperty); }
+            set { SetValue(ArticleTitleProperty, value); }
+        }
+
+        public string SubmitterName
+        {
+            get { return (string)GetValue(SubmitterNameProperty); }
+            set { SetValue(SubmitterNameProperty, value); }
+        }
+
+        public string TimeAgo
+        {
+            get { return (string)GetValue(TimeAgoProperty); }
+            set { SetValue(TimeAgoProperty, value); }
+        }
+
+        public int Score
+        {
+            get { return (int)GetValue(ScoreProperty); }
+            set { SetValue(ScoreProperty, value); }
+        }
+
+        public int NumComments
+        {
+            get { return (int)GetValue(NumCommentsProperty); }
+            set { SetValue(NumCommentsProperty, value); }
+        }
+
         public FeedCell()
         {
             var g = new Grid
@@ -70,36 +131,45 @@ public class MainPage : ContentPage
             };
             Grid.SetRowSpan(f, 4);
             g.Add(f, 0, 1);
+            var urlLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
+            urlLbl.SetBinding(Label.TextProperty, new Binding(nameof(UrlText), BindingMode.OneWay, source: this));
+
             g.Add(new HorizontalStackLayout
             {
                 Spacing = 4,
                 Children = {
                     new BoxView { VerticalOptions = LayoutOptions.Center, HeightRequest = 16, WidthRequest = 16, Color = Colors.Black.WithAlpha(0.1f), },
-                    new NoctalLabel { VerticalOptions = LayoutOptions.Center, Text = "thinkcomposer.com", }
+                    urlLbl,
                 },
             }, 1, 1);
-            g.Add(new NoctalLabel
-            {
-                LineBreakMode = LineBreakMode.WordWrap,
-                Text = "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models",
-            }, 1, 2);
+            var titleLbl = new NoctalLabel { LineBreakMode = LineBreakMode.WordWrap, };
+            titleLbl.SetBinding(Label.TextProperty, new Binding(nameof(ArticleTitle), BindingMode.OneWay, source: this));
+            g.Add(titleLbl, 1, 2);
+            var submitterLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
+            submitterLbl.SetBinding(Label.TextProperty, new Binding(nameof(SubmitterName), BindingMode.OneWay, source: this));
+            var timeAgoLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
+            timeAgoLbl.SetBinding(Label.TextProperty, new Binding(nameof(TimeAgo), BindingMode.OneWay, source: this));
             g.Add(new HorizontalStackLayout
             {
                 Spacing = 4,
                 Children = {
-                    new NoctalLabel { VerticalOptions = LayoutOptions.Center, Text = "Tomte", },
+                    submitterLbl,
                     new NoctalLabel { VerticalOptions = LayoutOptions.Center, Text = "•", },
-                    new NoctalLabel { VerticalOptions = LayoutOptions.Center, Text = "18h ago", },
+                    timeAgoLbl,
                 },
             }, 1, 3);
+            var scoreLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
+            scoreLbl.SetBinding(Label.TextProperty, new Binding(nameof(Score), BindingMode.OneWay, source: this));
+            var commentsLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
+            commentsLbl.SetBinding(Label.TextProperty, new Binding(nameof(NumComments), BindingMode.OneWay, stringFormat: "{0} comments", source: this));
             g.Add(new HorizontalStackLayout
             {
                 Spacing = 4,
                 Children = {
                     new BoxView { VerticalOptions = LayoutOptions.Center, HeightRequest = 16, WidthRequest = 16, Color = Colors.Red.WithAlpha(0.1f), },
-                    new NoctalLabel { VerticalOptions = LayoutOptions.Center, Text = "35", },
+                    scoreLbl,
                     new NoctalLabel { VerticalOptions = LayoutOptions.Center, Text = "•", },
-                    new NoctalLabel { VerticalOptions = LayoutOptions.Center, Text = "9 comments", },
+                    commentsLbl,
                 },
             }, 1, 4);
 
