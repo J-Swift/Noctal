@@ -2,26 +2,27 @@
 
 public class MainPage : ContentPage
 {
-    private record FeedItem(string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments);
+    private record FeedItem(int Index, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments);
     public MainPage()
     {
         var cv = new CollectionView();
 
         cv.ItemsSource = new[] {
-            new FeedItem("redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
-            new FeedItem("thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
-            new FeedItem("meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
-            new FeedItem("redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
-            new FeedItem("thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
-            new FeedItem("meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
-            new FeedItem("redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
-            new FeedItem("thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
-            new FeedItem("meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
-            new FeedItem("redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
-            new FeedItem("thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
-            new FeedItem("meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
+            new FeedItem(1, "redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
+            new FeedItem(2, "thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
+            new FeedItem(3, "meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
+            new FeedItem(4, "redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
+            new FeedItem(5, "thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
+            new FeedItem(6, "meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
+            new FeedItem(7, "redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
+            new FeedItem(8, "thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
+            new FeedItem(9, "meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
+            new FeedItem(10, "redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
+            new FeedItem(11, "thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
+            new FeedItem(12, "meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
         };
         var dt = new DataTemplate(() => new FeedCell());
+        dt.SetBinding(FeedCell.ItemNumberProperty, nameof(FeedItem.Index));
         dt.SetBinding(FeedCell.UrlTextProperty, nameof(FeedItem.Url));
         dt.SetBinding(FeedCell.ArticleTitleProperty, nameof(FeedItem.Title));
         dt.SetBinding(FeedCell.SubmitterNameProperty, nameof(FeedItem.Submitter));
@@ -37,12 +38,19 @@ public class MainPage : ContentPage
 
     private class FeedCell : ContentView
     {
+        public static readonly BindableProperty ItemNumberProperty = BindableProperty.Create(nameof(ItemNumber), typeof(int), typeof(FeedCell), 0);
         public static readonly BindableProperty UrlTextProperty = BindableProperty.Create(nameof(UrlText), typeof(string), typeof(FeedCell), "");
         public static readonly BindableProperty ArticleTitleProperty = BindableProperty.Create(nameof(ArticleTitle), typeof(string), typeof(FeedCell), "");
         public static readonly BindableProperty SubmitterNameProperty = BindableProperty.Create(nameof(SubmitterName), typeof(string), typeof(FeedCell), "");
         public static readonly BindableProperty TimeAgoProperty = BindableProperty.Create(nameof(TimeAgo), typeof(string), typeof(FeedCell), "");
         public static readonly BindableProperty ScoreProperty = BindableProperty.Create(nameof(Score), typeof(int), typeof(FeedCell), 0);
         public static readonly BindableProperty NumCommentsProperty = BindableProperty.Create(nameof(NumComments), typeof(int), typeof(FeedCell), 0);
+
+        public int ItemNumber
+        {
+            get { return (int)GetValue(ItemNumberProperty); }
+            set { SetValue(ItemNumberProperty, value); }
+        }
 
         public string UrlText
         {
@@ -131,6 +139,8 @@ public class MainPage : ContentPage
             };
             Grid.SetRowSpan(f, 4);
             g.Add(f, 0, 1);
+            var idxLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, Margin = new Thickness(0, 0, 8, 0), };
+            idxLbl.SetBinding(Label.TextProperty, new Binding(nameof(ItemNumber), BindingMode.OneWay, stringFormat: "{0}.", source: this));
             var urlLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
             urlLbl.SetBinding(Label.TextProperty, new Binding(nameof(UrlText), BindingMode.OneWay, source: this));
 
@@ -138,6 +148,7 @@ public class MainPage : ContentPage
             {
                 Spacing = 4,
                 Children = {
+                    idxLbl,
                     new BoxView { VerticalOptions = LayoutOptions.Center, HeightRequest = 16, WidthRequest = 16, Color = Colors.Black.WithAlpha(0.1f), },
                     urlLbl,
                 },
