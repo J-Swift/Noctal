@@ -3,25 +3,57 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Noctal", "Noctal.csproj", "{AE7FFDF3-BD6A-49F9-A5C4-87E7C29C528C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{AC1B0C22-3FD2-472E-8EE4-E02531801C93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noctal", "Apps\Noctal\Noctal.csproj", "{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{56D88E12-29AF-43C6-B14A-C44CD73E9990}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noctal.UIKit", "Libs\Noctal.UIKit\Noctal.UIKit.csproj", "{57AD49BD-A994-452E-99E7-614067A1DF77}"
 EndProject
 Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AE7FFDF3-BD6A-49F9-A5C4-87E7C29C528C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE7FFDF3-BD6A-49F9-A5C4-87E7C29C528C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE7FFDF3-BD6A-49F9-A5C4-87E7C29C528C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{AE7FFDF3-BD6A-49F9-A5C4-87E7C29C528C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE7FFDF3-BD6A-49F9-A5C4-87E7C29C528C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE7FFDF3-BD6A-49F9-A5C4-87E7C29C528C}.Release|Any CPU.Deploy.0 = Release|Any CPU
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61F7FB11-1E47-470C-91E2-47F8143E1572}
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Debug|x64.Build.0 = Debug|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Debug|x86.Build.0 = Debug|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Release|x64.ActiveCfg = Release|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Release|x64.Build.0 = Release|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Release|x86.ActiveCfg = Release|Any CPU
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}.Release|x86.Build.0 = Release|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Debug|x64.Build.0 = Debug|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Debug|x86.Build.0 = Debug|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Release|x64.ActiveCfg = Release|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Release|x64.Build.0 = Release|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Release|x86.ActiveCfg = Release|Any CPU
+		{57AD49BD-A994-452E-99E7-614067A1DF77}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20} = {AC1B0C22-3FD2-472E-8EE4-E02531801C93}
+		{57AD49BD-A994-452E-99E7-614067A1DF77} = {56D88E12-29AF-43C6-B14A-C44CD73E9990}
 	EndGlobalSection
 EndGlobal
