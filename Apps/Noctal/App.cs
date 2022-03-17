@@ -4,6 +4,8 @@ public class App : Application
 {
     public App()
     {
-        MainPage = new FeedView();
+        var coord = new ApplicationCoordinator();
+        MainPage = coord.RootPage;
+        coord.Start();
     }
 }
