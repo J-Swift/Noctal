@@ -2,16 +2,12 @@ using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
 using ReactiveUI;
 using DynamicData;
+using Noctal.Models;
 
 namespace Noctal;
 
 public class FeedViewModel : BaseViewModel
 {
-    public record FeedItem(int Id, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments)
-    {
-        public int Index { get; } = Id;
-    };
-
     private readonly SourceCache<FeedItem, int> _itemsCache = new(it => it.Id);
     public ReadOnlyObservableCollection<FeedItem> Items { get; }
 

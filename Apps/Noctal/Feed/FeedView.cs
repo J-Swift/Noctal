@@ -1,28 +1,41 @@
 using System.Reactive.Disposables;
 using ReactiveUI;
 using ReactiveUI.Maui;
+using Noctal.Models;
 
 namespace Noctal;
 
 public class FeedView : ReactiveContentPage<FeedViewModel>
 {
-    private CollectionView Feed { get; }
+    public record FeedItemSelectedArgs(FeedItem Item);
+    public event EventHandler<FeedItemSelectedArgs>? OnItemSelected;
 
-    public FeedView()
+    private CollectionView Feed { get; set; } = null!;
+
+    public void Initialize()
     {
-        ViewModel = new();
-
         Feed = new CollectionView();
 
         var dt = new DataTemplate(() => new FeedCell());
-        dt.SetBinding(FeedCell.ItemNumberProperty, nameof(FeedViewModel.FeedItem.Index));
-        dt.SetBinding(FeedCell.UrlTextProperty, nameof(FeedViewModel.FeedItem.Url));
-        dt.SetBinding(FeedCell.ArticleTitleProperty, nameof(FeedViewModel.FeedItem.Title));
-        dt.SetBinding(FeedCell.SubmitterNameProperty, nameof(FeedViewModel.FeedItem.Submitter));
-        dt.SetBinding(FeedCell.TimeAgoProperty, nameof(FeedViewModel.FeedItem.TimeAgo));
-        dt.SetBinding(FeedCell.ScoreProperty, nameof(FeedViewModel.FeedItem.Score));
-        dt.SetBinding(FeedCell.NumCommentsProperty, nameof(FeedViewModel.FeedItem.NumComments));
+        dt.SetBinding(FeedCell.ItemNumberProperty, nameof(FeedItem.Index));
+        dt.SetBinding(FeedCell.UrlTextProperty, nameof(FeedItem.Url));
+        dt.SetBinding(FeedCell.ArticleTitleProperty, nameof(FeedItem.Title));
+        dt.SetBinding(FeedCell.SubmitterNameProperty, nameof(FeedItem.Submitter));
+        dt.SetBinding(FeedCell.TimeAgoProperty, nameof(FeedItem.TimeAgo));
+        dt.SetBinding(FeedCell.ScoreProperty, nameof(FeedItem.Score));
+        dt.SetBinding(FeedCell.NumCommentsProperty, nameof(FeedItem.NumComments));
         Feed.ItemTemplate = dt;
+
+        Feed.SelectionMode = SelectionMode.Single;
+        Feed.SelectionChanged += (sender, args) =>
+        {
+            if (args.CurrentSelection?.Any() == true && args.CurrentSelection[0] is FeedItem item)
+            {
+                OnItemSelected?.Invoke(this, new FeedItemSelectedArgs(item));
+                // TODO(jpr): add deselection when Maui supports it properly
+                // Feed.SelectedItem = null;
+            }
+        };
 
         var g = new Grid();
         g.Add(Feed);
