@@ -8,7 +8,6 @@ public class MainPage : ReactiveContentPage<FeedViewModel>
 {
     private CollectionView Feed { get; }
 
-    private record FeedItem(int Index, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments);
     public MainPage()
     {
         ViewModel = new();
@@ -16,13 +15,13 @@ public class MainPage : ReactiveContentPage<FeedViewModel>
         Feed = new CollectionView();
 
         var dt = new DataTemplate(() => new FeedCell());
-        dt.SetBinding(FeedCell.ItemNumberProperty, nameof(FeedItem.Index));
-        dt.SetBinding(FeedCell.UrlTextProperty, nameof(FeedItem.Url));
-        dt.SetBinding(FeedCell.ArticleTitleProperty, nameof(FeedItem.Title));
-        dt.SetBinding(FeedCell.SubmitterNameProperty, nameof(FeedItem.Submitter));
-        dt.SetBinding(FeedCell.TimeAgoProperty, nameof(FeedItem.TimeAgo));
-        dt.SetBinding(FeedCell.ScoreProperty, nameof(FeedItem.Score));
-        dt.SetBinding(FeedCell.NumCommentsProperty, nameof(FeedItem.NumComments));
+        dt.SetBinding(FeedCell.ItemNumberProperty, nameof(FeedViewModel.FeedItem.Index));
+        dt.SetBinding(FeedCell.UrlTextProperty, nameof(FeedViewModel.FeedItem.Url));
+        dt.SetBinding(FeedCell.ArticleTitleProperty, nameof(FeedViewModel.FeedItem.Title));
+        dt.SetBinding(FeedCell.SubmitterNameProperty, nameof(FeedViewModel.FeedItem.Submitter));
+        dt.SetBinding(FeedCell.TimeAgoProperty, nameof(FeedViewModel.FeedItem.TimeAgo));
+        dt.SetBinding(FeedCell.ScoreProperty, nameof(FeedViewModel.FeedItem.Score));
+        dt.SetBinding(FeedCell.NumCommentsProperty, nameof(FeedViewModel.FeedItem.NumComments));
         Feed.ItemTemplate = dt;
 
         var g = new Grid();
@@ -90,11 +89,10 @@ public class MainPage : ReactiveContentPage<FeedViewModel>
 
         public FeedCell()
         {
-            var g = new Grid
+            var grid = new Grid
             {
                 Padding = new Thickness(16, 0, 16, 16),
                 ColumnSpacing = 16,
-                RowSpacing = 8,
                 ColumnDefinitions = {
                     new ColumnDefinition { Width = GridLength.Auto, },
                     new ColumnDefinition { Width = GridLength.Star, },
@@ -102,23 +100,20 @@ public class MainPage : ReactiveContentPage<FeedViewModel>
                 RowDefinitions = {
                     new RowDefinition { Height = GridLength.Auto, },
                     new RowDefinition { Height = GridLength.Auto, },
-                    new RowDefinition { Height = GridLength.Auto, },
-                    new RowDefinition { Height = GridLength.Auto, },
-                    new RowDefinition { Height = GridLength.Auto, },
                 },
             };
             var separator = new ContentView
             {
-                Padding = new Thickness(-g.Padding.Left, 0, -g.Padding.Right, 0),
+                Padding = new Thickness(-grid.Padding.Left, 0, -grid.Padding.Right, 0),
                 Content = new BoxView
                 {
                     HeightRequest = 1,
                     Color = Colors.Black.WithAlpha(0.2f),
-                    Margin = new Thickness(0, 0, 0, g.Padding.Bottom - g.RowSpacing),
+                    Margin = new Thickness(0, 0, 0, grid.Padding.Bottom - grid.RowSpacing),
                 },
             };
             Grid.SetColumnSpan(separator, 2);
-            g.Add(separator);
+            grid.Add(separator);
             var f = new Frame
             {
                 Padding = 0,
@@ -137,14 +132,15 @@ public class MainPage : ReactiveContentPage<FeedViewModel>
                     HeightRequest = 70,
                 },
             };
-            Grid.SetRowSpan(f, 4);
-            g.Add(f, 0, 1);
+            grid.Add(f, 0, 1);
+
+            var sv = new VerticalStackLayout { Spacing = 8, };
+
             var idxLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, Margin = new Thickness(0, 0, 8, 0), };
             idxLbl.SetBinding(Label.TextProperty, new Binding(nameof(ItemNumber), BindingMode.OneWay, stringFormat: "{0}.", source: this));
             var urlLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
             urlLbl.SetBinding(Label.TextProperty, new Binding(nameof(UrlText), BindingMode.OneWay, source: this));
-
-            g.Add(new HorizontalStackLayout
+            sv.Add(new HorizontalStackLayout
             {
                 Spacing = 4,
                 Children = {
@@ -152,15 +148,16 @@ public class MainPage : ReactiveContentPage<FeedViewModel>
                     new BoxView { VerticalOptions = LayoutOptions.Center, HeightRequest = 16, WidthRequest = 16, Color = Colors.Black.WithAlpha(0.1f), },
                     urlLbl,
                 },
-            }, 1, 1);
+            });
+
             var titleLbl = new NoctalLabel { LineBreakMode = LineBreakMode.WordWrap, };
             titleLbl.SetBinding(Label.TextProperty, new Binding(nameof(ArticleTitle), BindingMode.OneWay, source: this));
-            g.Add(titleLbl, 1, 2);
+            sv.Add(titleLbl);
             var submitterLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
             submitterLbl.SetBinding(Label.TextProperty, new Binding(nameof(SubmitterName), BindingMode.OneWay, source: this));
             var timeAgoLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
             timeAgoLbl.SetBinding(Label.TextProperty, new Binding(nameof(TimeAgo), BindingMode.OneWay, source: this));
-            g.Add(new HorizontalStackLayout
+            sv.Add(new HorizontalStackLayout
             {
                 Spacing = 4,
                 Children = {
@@ -168,12 +165,13 @@ public class MainPage : ReactiveContentPage<FeedViewModel>
                     new NoctalLabel { VerticalOptions = LayoutOptions.Center, Text = "•", },
                     timeAgoLbl,
                 },
-            }, 1, 3);
+            });
+
             var scoreLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
             scoreLbl.SetBinding(Label.TextProperty, new Binding(nameof(Score), BindingMode.OneWay, source: this));
             var commentsLbl = new NoctalLabel { VerticalOptions = LayoutOptions.Center, };
             commentsLbl.SetBinding(Label.TextProperty, new Binding(nameof(NumComments), BindingMode.OneWay, stringFormat: "{0} comments", source: this));
-            g.Add(new HorizontalStackLayout
+            sv.Add(new HorizontalStackLayout
             {
                 Spacing = 4,
                 Children = {
@@ -182,9 +180,11 @@ public class MainPage : ReactiveContentPage<FeedViewModel>
                     new NoctalLabel { VerticalOptions = LayoutOptions.Center, Text = "•", },
                     commentsLbl,
                 },
-            }, 1, 4);
+            });
 
-            Content = g;
+            grid.Add(sv, 1, 1);
+
+            Content = grid;
         }
     }
 }
