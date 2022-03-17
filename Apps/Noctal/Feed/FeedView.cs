@@ -32,8 +32,7 @@ public class FeedView : ReactiveContentPage<FeedViewModel>
             if (args.CurrentSelection?.Any() == true && args.CurrentSelection[0] is FeedItem item)
             {
                 OnItemSelected?.Invoke(this, new FeedItemSelectedArgs(item));
-                // TODO(jpr): add deselection when Maui supports it properly
-                // Feed.SelectedItem = null;
+                Feed.SelectedItem = null;
             }
         };
 
@@ -126,7 +125,8 @@ public class FeedView : ReactiveContentPage<FeedViewModel>
                 },
             };
             Grid.SetColumnSpan(separator, 2);
-            grid.Add(separator);
+            // TODO(jpr): this breaks the cell sizing
+            // grid.Add(separator);
             var f = new Frame
             {
                 Padding = 0,
