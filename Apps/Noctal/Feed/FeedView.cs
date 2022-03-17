@@ -1,14 +1,14 @@
-﻿using System.Reactive.Disposables;
+using System.Reactive.Disposables;
 using ReactiveUI;
 using ReactiveUI.Maui;
 
 namespace Noctal;
 
-public class MainPage : ReactiveContentPage<FeedViewModel>
+public class FeedView : ReactiveContentPage<FeedViewModel>
 {
     private CollectionView Feed { get; }
 
-    public MainPage()
+    public FeedView()
     {
         ViewModel = new();
 
