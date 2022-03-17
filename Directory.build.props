@@ -8,7 +8,6 @@
     <LangVersion>10.0</LangVersion>
     <nullable>Enable</nullable>
     <Deterministic>True</Deterministic>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- <ImplicitUsings>enable</ImplicitUsings> -->
 
     <UseMaui>true</UseMaui>
@@ -16,6 +15,9 @@
     <SingleProject>true</SingleProject>
     <!-- Required for C# Hot Reload -->
     <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
+
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>CA1416</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

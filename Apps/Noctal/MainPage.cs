@@ -1,26 +1,20 @@
-﻿namespace Noctal;
+﻿using System.Reactive.Disposables;
+using ReactiveUI;
+using ReactiveUI.Maui;
 
-public class MainPage : ContentPage
+namespace Noctal;
+
+public class MainPage : ReactiveContentPage<FeedViewModel>
 {
+    private CollectionView Feed { get; }
+
     private record FeedItem(int Index, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments);
     public MainPage()
     {
-        var cv = new CollectionView();
+        ViewModel = new();
 
-        cv.ItemsSource = new[] {
-            new FeedItem(1, "redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
-            new FeedItem(2, "thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
-            new FeedItem(3, "meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
-            new FeedItem(4, "redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
-            new FeedItem(5, "thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
-            new FeedItem(6, "meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
-            new FeedItem(7, "redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
-            new FeedItem(8, "thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
-            new FeedItem(9, "meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
-            new FeedItem(10, "redhat.com", "Podman can transfer container images without a registry", "kukx", "5h ago", 25, 5),
-            new FeedItem(11, "thinkcomposer.com", "ThinkComposer. Flowcharts, Concept Maps, Mind Maps, Diagrams and Models", "Tomte", "18h ago", 35, 9),
-            new FeedItem(12, "meyerweb.com", "When or If", "J-Swift", "5h ago", 5, 24),
-        };
+        Feed = new CollectionView();
+
         var dt = new DataTemplate(() => new FeedCell());
         dt.SetBinding(FeedCell.ItemNumberProperty, nameof(FeedItem.Index));
         dt.SetBinding(FeedCell.UrlTextProperty, nameof(FeedItem.Url));
@@ -29,11 +23,17 @@ public class MainPage : ContentPage
         dt.SetBinding(FeedCell.TimeAgoProperty, nameof(FeedItem.TimeAgo));
         dt.SetBinding(FeedCell.ScoreProperty, nameof(FeedItem.Score));
         dt.SetBinding(FeedCell.NumCommentsProperty, nameof(FeedItem.NumComments));
-        cv.ItemTemplate = dt;
+        Feed.ItemTemplate = dt;
 
         var g = new Grid();
-        g.Add(cv);
+        g.Add(Feed);
         Content = g;
+
+        this.WhenActivated(disposables =>
+        {
+            this.OneWayBind(ViewModel, vm => vm.Items, v => v.Feed.ItemsSource)
+                .DisposeWith(disposables);
+        });
     }
 
     private class FeedCell : ContentView
