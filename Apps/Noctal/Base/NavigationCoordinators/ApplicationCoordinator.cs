@@ -19,6 +19,7 @@ public class ApplicationCoordinator : BaseCoordinator
         var page = new FeedView(vm);
         page.OnItemSelected += OnFeedItemSelectedAsync;
 
+        NavigationPage.SetHasNavigationBar(page, false);
         await NavPage.PushAsync(page, false);
     }
 
