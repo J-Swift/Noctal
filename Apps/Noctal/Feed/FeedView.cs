@@ -10,10 +10,12 @@ public class FeedView : ReactiveContentPage<FeedViewModel>
     public record FeedItemSelectedArgs(FeedItem Item);
     public event EventHandler<FeedItemSelectedArgs>? OnItemSelected;
 
-    private CollectionView Feed { get; set; } = null!;
+    private CollectionView Feed { get; }
 
-    public void Initialize()
+    public FeedView(FeedViewModel vm)
     {
+        ViewModel = vm;
+
         Feed = new CollectionView();
 
         var dt = new DataTemplate(() => new FeedCell());

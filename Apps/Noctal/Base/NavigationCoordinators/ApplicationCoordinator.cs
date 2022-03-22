@@ -15,19 +15,17 @@ public class ApplicationCoordinator : BaseCoordinator
     {
         await base.Start();
 
-        var page = new FeedView();
+        var vm = new FeedViewModel();
+        var page = new FeedView(vm);
         page.OnItemSelected += OnFeedItemSelectedAsync;
-        page.ViewModel = new();
-        page.Initialize();
 
         await NavPage.PushAsync(page, false);
     }
 
     private async void OnFeedItemSelectedAsync(object? sender, FeedView.FeedItemSelectedArgs e)
     {
-        var page = new FeedDetailView();
-        page.ViewModel = new(e.Item);
-        page.Initialize();
+        var vm = new FeedDetailViewModel(e.Item);
+        var page = new FeedDetailView(vm);
 
         await NavPage.PushAsync(page, true);
     }

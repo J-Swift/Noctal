@@ -17,7 +17,7 @@
     <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1416</WarningsNotAsErrors>
+    <WarningsNotAsErrors>CA1416,CS8618</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,10 +6,12 @@ namespace Noctal;
 
 public class FeedDetailView : ReactiveContentPage<FeedDetailViewModel>
 {
-    private NoctalLabel LblTitle { get; set; } = null!;
+    private NoctalLabel LblTitle { get; }
 
-    public void Initialize()
+    public FeedDetailView(FeedDetailViewModel vm)
     {
+        ViewModel = vm;
+
         Padding = 16;
 
         LblTitle = new NoctalLabel

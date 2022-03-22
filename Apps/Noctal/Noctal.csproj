@@ -34,9 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ReactiveUI" Version="17.1.50" />
-    <PackageReference Include="ReactiveUI.Fody" Version="17.1.50" />
-    <PackageReference Include="ReactiveUI.Maui" Version="17.1.50" />
-    <PackageReference Include="DynamicData.ReactiveUI" Version="6.11.0.2613" />
+    <ProjectReference Include="..\..\ReactiveUI\src\ReactiveUI\ReactiveUI.csproj" />
+    <ProjectReference Include="..\..\ReactiveUI\src\ReactiveUI.Maui\ReactiveUI.Maui.csproj" />
+
+    <PackageReference Include="DynamicData" Version="7.6.5" />
   </ItemGroup>
 </Project>

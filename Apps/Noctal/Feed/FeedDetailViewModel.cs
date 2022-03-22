@@ -1,12 +1,16 @@
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using Noctal.Models;
 
 namespace Noctal;
 
 public class FeedDetailViewModel : BaseViewModel
 {
-    [Reactive] public string Title { get; private set; }
+    private string title;
+    public string Title
+    {
+        get => title;
+        set => this.RaiseAndSetIfChanged(ref title, value);
+    }
 
     private readonly FeedItem _item;
 
