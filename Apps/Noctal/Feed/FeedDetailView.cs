@@ -1,6 +1,6 @@
-using System.Reactive.Disposables;
 using ReactiveUI;
 using ReactiveUI.Maui;
+using System.Reactive.Disposables;
 
 namespace Noctal;
 

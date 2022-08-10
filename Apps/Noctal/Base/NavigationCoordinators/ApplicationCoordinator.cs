@@ -15,11 +15,23 @@ public class ApplicationCoordinator : BaseCoordinator
     {
         await base.Start();
 
-        var vm = new FeedViewModel();
-        var page = new FeedView(vm);
-        page.OnItemSelected += OnFeedItemSelectedAsync;
+        // var vm = new FeedViewModel();
+        // var page = new FeedView(vm);
+        // page.OnItemSelected += OnFeedItemSelectedAsync;
 
-        NavigationPage.SetHasNavigationBar(page, false);
+        // NavigationPage.SetHasNavigationBar(page, false);
+        // await NavPage.PushAsync(page, false);
+        var page = new ContentPage {
+            Content = new VerticalStackLayout {
+                BackgroundColor = Colors.Green,
+                // VerticalOptions = LayoutOptions.FillAndExpand,
+                Children = {
+                    new Label { Text = "One",  BackgroundColor = Colors.Yellow},
+                    new Label { Text = "Two", BackgroundColor = Colors.Brown, VerticalOptions = LayoutOptions.FillAndExpand, },
+                    new Label { Text = "Three", BackgroundColor = Colors.Red},
+                }
+            }
+        };
         await NavPage.PushAsync(page, false);
     }
 

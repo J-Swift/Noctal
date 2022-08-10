@@ -6,6 +6,7 @@
 
   <PropertyGroup>
     <LangVersion>10.0</LangVersion>
+    <MauiVersion>6.0.486</MauiVersion>
     <nullable>Enable</nullable>
     <Deterministic>True</Deterministic>
     <!-- <ImplicitUsings>enable</ImplicitUsings> -->
@@ -17,7 +18,7 @@
     <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1416,CS8618</WarningsNotAsErrors>
+    <WarningsNotAsErrors>CA1416,CS8618,CS0618</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,7 +31,6 @@
     <Using Include="System.Threading.Tasks" />
     <Using Include="Microsoft.Maui" />
     <Using Include="Microsoft.Maui.Controls" />
-    <Using Include="Microsoft.Maui.Essentials" />
     <Using Include="Microsoft.Maui.Graphics" />
   </ItemGroup>
 
@@ -47,7 +47,7 @@
   <!--            -->
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-ios'">
-    <SupportedOSPlatformVersion>14.5</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <!--                -->

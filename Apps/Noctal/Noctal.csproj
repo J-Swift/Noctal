@@ -34,9 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ReactiveUI\src\ReactiveUI\ReactiveUI.csproj" />
-    <ProjectReference Include="..\..\ReactiveUI\src\ReactiveUI.Maui\ReactiveUI.Maui.csproj" />
+    <PackageReference Include="ReactiveUI" Version="18.3.1" />
+    <PackageReference Include="ReactiveUI.Maui" Version="18.3.1" />
 
-    <PackageReference Include="DynamicData" Version="7.6.5" />
+    <PackageReference Include="DynamicData" Version="7.9.7" />
   </ItemGroup>
 </Project>
