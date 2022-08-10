@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{AC1B0C22-3FD2-472E-8EE4-E02531801C93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noctal", "Apps\Noctal\Noctal.csproj", "{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noctal-maui", "Apps\Noctal-maui\Noctal-maui.csproj", "{42DA3DD2-7959-4A20-B4CD-5FE25A5BCC20}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{56D88E12-29AF-43C6-B14A-C44CD73E9990}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noctal.UI", "Libs\Noctal.UI\Noctal.UI.csproj", "{57AD49BD-A994-452E-99E7-614067A1DF77}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noctal.UI-maui", "Libs\Noctal.UI-maui\Noctal.UI-maui.csproj", "{57AD49BD-A994-452E-99E7-614067A1DF77}"
 EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
