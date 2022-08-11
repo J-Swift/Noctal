@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Noctal</RootNamespace>
+
+    <!-- Display name -->
+    <ApplicationTitle>Noctal</ApplicationTitle>
+
+    <!-- App Identifier -->
+    <ApplicationId>com.radreichley.noctal</ApplicationId>
+
+    <!-- Versions -->
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableDefaultMauiItems>true</EnableDefaultMauiItems>
+    <UseMauiCore>true</UseMauiCore>
+    <UseMauiAssets>true</UseMauiAssets>
+
+    <AndroidProjectFolder>Platforms\Android\</AndroidProjectFolder>
+    <AndroidManifest>$(AndroidProjectFolder)\AndroidManifest.xml</AndroidManifest>
+    <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
+    <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiImage Include="Resources\Images\*" />
+    <MauiFont Include="Resources\Fonts\*" />
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <MauiIcon Include="Resources\AppIcon\appicon.svg">
+      <ForegroundFile>Resources\AppIcon\appiconfg.svg</ForegroundFile>
+      <Color>#512BD4</Color>
+    </MauiIcon>
+    <MauiSplashScreen Include="Resources\AppIcon\appiconfg.svg">
+      <Color>#512BD4</Color>
+      <BaseSize>128,128</BaseSize>
+    </MauiSplashScreen>
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
+    <Compile Remove="**\*.ios.cs" />
+    <None Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\iOS\**\*.cs" />
+    <None Include="**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) != true AND $(TargetFramework.StartsWith('net6.0-android')) != true ">
+    <Compile Remove="**\*.android.cs" />
+    <None Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\Android\**\*.cs" />
+    <None Include="**\Android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libs\Noctal.UI\Noctal.UI.csproj" />
+    <Using Alias="NoctalLabel" Include="Noctal.UI.Controls.Label" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ReactiveUI" Version="18.3.1" />
+    <PackageReference Include="ReactiveUI.Maui" Version="18.3.1" />
+
+    <PackageReference Include="DynamicData" Version="7.9.7" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
+    <PackageVersion Include="Xamarin.AndroidX.Core" Version="1.8.0.1" />
+    <PackageVersion Include="Xamarin.AndroidX.ConstraintLayout" Version="2.1.4.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.5.0" />
+    <PackageVersion Include="Xamarin.AndroidX.Navigation.UI" Version="2.5.0" />
+  </ItemGroup>
+</Project>
