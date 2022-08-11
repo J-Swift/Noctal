@@ -5,14 +5,14 @@ namespace Noctal;
 
 public class FeedDetailViewModel : BaseViewModel
 {
-    private string title;
+    private string title = null!;
     public string Title
     {
         get => title;
         set => this.RaiseAndSetIfChanged(ref title, value);
     }
 
-    private string url;
+    private string url = null!;
     public string Url
     {
         get => url;
@@ -26,14 +26,14 @@ public class FeedDetailViewModel : BaseViewModel
         set => this.RaiseAndSetIfChanged(ref score, value);
     }
 
-    private string submitter;
+    private string submitter = null!;
     public string Submitter
     {
         get => submitter;
         set => this.RaiseAndSetIfChanged(ref submitter, value);
     }
 
-    private string timeAgo;
+    private string timeAgo = null!;
     public string TimeAgo
     {
         get => timeAgo;

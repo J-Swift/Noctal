@@ -3,13 +3,14 @@
     <TargetFrameworks>net6.0-android;net6.0-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>Noctal</RootNamespace>
+    <UseMaui>true</UseMaui>
+  </PropertyGroup>
 
+  <PropertyGroup>
     <!-- Display name -->
     <ApplicationTitle>MauiNoctal</ApplicationTitle>
-
     <!-- App Identifier -->
     <ApplicationId>com.radreichley.noctal</ApplicationId>
-
     <!-- Versions -->
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>

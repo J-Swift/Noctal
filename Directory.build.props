@@ -6,19 +6,18 @@
 
   <PropertyGroup>
     <LangVersion>10.0</LangVersion>
-    <MauiVersion>6.0.486</MauiVersion>
     <nullable>Enable</nullable>
     <Deterministic>True</Deterministic>
-    <!-- <ImplicitUsings>enable</ImplicitUsings> -->
-
-    <UseMaui>true</UseMaui>
-    <!-- Configures 'Platforms' folder and *.iOS.cs/*.Android.cs/etc file conventions -->
-    <SingleProject>true</SingleProject>
-    <!-- Required for C# Hot Reload -->
-    <UseInterpreter Condition="'$(Configuration)' == 'Debug'">True</UseInterpreter>
 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1416,CS8618,CS0618</WarningsNotAsErrors>
+    <WarningsNotAsErrors>CS8618,CS0618</WarningsNotAsErrors>
+    <NoWarn>CA1416</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <MauiVersion>6.0.486</MauiVersion>
+    <!-- Configures 'Platforms' folder and *.iOS.cs/*.Android.cs/etc file conventions -->
+    <SingleProject>true</SingleProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,9 +28,12 @@
     <Using Include="System.Net.Http" />
     <Using Include="System.Threading" />
     <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true'">
     <Using Include="Microsoft.Maui" />
-    <Using Include="Microsoft.Maui.Controls" />
     <Using Include="Microsoft.Maui.Graphics" />
+    <Using Include="Microsoft.Maui.Controls" Condition="'$(UseMaui)' == 'true'"/>
   </ItemGroup>
 
   <PropertyGroup>
