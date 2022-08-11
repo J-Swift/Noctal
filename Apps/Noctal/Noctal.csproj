@@ -19,8 +19,13 @@
     <UseMauiCore>true</UseMauiCore>
     <UseMauiAssets>true</UseMauiAssets>
 
+    <iOSProjectFolder>Platforms\iOS\</iOSProjectFolder>
+    <IPhoneResourcePrefix>$(iOSProjectFolder)Resources</IPhoneResourcePrefix>
+    <CodesignEntitlements Condition=" Exists('$(iOSProjectFolder)Entitlements.plist') ">$(iOSProjectFolder)Entitlements.plist</CodesignEntitlements>
+    <_SingleProjectiOSExcludes>$(iOSProjectFolder)/**/.*/**</_SingleProjectiOSExcludes>
+
     <AndroidProjectFolder>Platforms\Android\</AndroidProjectFolder>
-    <AndroidManifest>$(AndroidProjectFolder)\AndroidManifest.xml</AndroidManifest>
+    <AndroidManifest>$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
     <MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
     <MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
   </PropertyGroup>
