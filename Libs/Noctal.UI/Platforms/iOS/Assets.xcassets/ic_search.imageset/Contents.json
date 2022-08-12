@@ -1,0 +1,15 @@
+{
+  "images": [
+    {
+      "filename": "ic_search.svg",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "version": 1,
+    "author": "Svg2Vector"
+  },
+  "properties": {
+    "preserves-vector-representation": true
+  }
+}

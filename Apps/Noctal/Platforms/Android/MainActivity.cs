@@ -16,7 +16,7 @@ public class MainActivity : AppCompatActivity
     {
         if (Theme.TryResolveAttribute(Resource.Attribute.maui_splash))
         {
-            SetTheme(Resource.Style.Theme_MaterialComponents_DayNight);
+            SetTheme(Resource.Style.Theme_Material3_DayNight);
         }
 
         base.OnCreate(savedInstanceState);
