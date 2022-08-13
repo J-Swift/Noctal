@@ -1,5 +1,4 @@
-using UIKit;
-
+#if IOS
 namespace Noctal;
 
 public class ApplicationCoordinator : BaseCoordinator
@@ -86,3 +85,5 @@ public class ApplicationCoordinator : BaseCoordinator
 //        await NavPage.PushAsync(page, true);
 //    }
 //}
+
+#endif

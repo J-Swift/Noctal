@@ -1,16 +1,19 @@
 ﻿using Android.App;
 using Android.Runtime;
-//using Microsoft.Maui.Hosting;
+using AndroidX.AppCompat.App;
 
 namespace Noctal;
 
 [Application]
 public class MainApplication : Application
 {
-	public MainApplication(IntPtr handle, JniHandleOwnership ownership)
-		: base(handle, ownership)
-	{
-	}
+    static MainApplication()
+    {
+        //AppCompatDelegate.DefaultNightMode = AppCompatDelegate.ModeNightYes;
+    }
 
-	//protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+    public MainApplication(IntPtr handle, JniHandleOwnership ownership)
+        : base(handle, ownership)
+    {
+    }
 }

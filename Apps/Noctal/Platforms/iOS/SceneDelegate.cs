@@ -14,28 +14,20 @@ public class SceneDelegate : UIWindowSceneDelegate
     {
         if (scene is UIWindowScene windowScene)
         {
-            try
+            Theme = new AdaptiveTheme(new LightTheme(), new DarkTheme(), false);
+            ApplyTheme();
+
+            Window = new UIWindow(windowScene)
             {
-                Theme = new AdaptiveTheme(new LightTheme(), new DarkTheme(), false);
-                ApplyTheme();
+                BackgroundColor = Theme.BackgroundColor,
+            };
+            var appCoordinator = new ApplicationCoordinator();
 
-                Window = new UIWindow(windowScene)
-                {
-                    BackgroundColor = Theme.BackgroundColor,
-                };
-                var appCoordinator = new ApplicationCoordinator();
-
-                Window.RootViewController = appCoordinator.RootView;
+            Window.RootViewController = appCoordinator.RootView;
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                appCoordinator.Start();
+            appCoordinator.Start();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                Window.MakeKeyAndVisible();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("JIMMY ERROR");
-                Console.WriteLine(e.Message);
-            }
+            Window.MakeKeyAndVisible();
         }
     }
 

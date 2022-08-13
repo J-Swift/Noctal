@@ -15,7 +15,6 @@ public interface ITheme
     Color OnSecondaryColor { get; }
 }
 
-
 #if IOS
 public class AdaptiveTheme
 {
