@@ -52,7 +52,6 @@ public class MainActivity : AppCompatActivity
             theme.OnBackgroundColor.ToPlatform(),
         });
 
-
         var toolbar = FindViewById<AndroidX.AppCompat.Widget.Toolbar>(Resource.Id.toolbar)!;
         toolbar.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
         toolbar.SetTitleTextColor(theme.OnBackgroundColor.ToPlatform());
@@ -61,6 +60,7 @@ public class MainActivity : AppCompatActivity
         navView.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
         navView.ItemTextColor = csl;
         navView.LabelVisibilityMode = LabelVisibilityMode.LabelVisibilityLabeled;
+        navView.ItemIconTintList = csl;
         var container = FindViewById<AndroidX.Fragment.App.FragmentContainerView>(Resource.Id.nav_host_fragment_activity_main)!;
         container.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
         var navHost = (NavHostFragment)SupportFragmentManager.FindFragmentById(Resource.Id.nav_host_fragment_activity_main)!;
@@ -80,10 +80,7 @@ public class MainActivity : AppCompatActivity
 
             var resId = resources.GetIdentifier(icName, "drawable", PackageName);
             var drawable = ResourcesCompat.GetDrawable(resources, resId, null)!;
-            var mutDrawable = DrawableCompat.Wrap(drawable);
-            DrawableCompat.SetTintMode(mutDrawable, PorterDuff.Mode.SrcIn!);
-            DrawableCompat.SetTintList(mutDrawable, csl);
-            item.SetIcon(mutDrawable);
+            item.SetIcon(drawable);
             return res;
         };
 
