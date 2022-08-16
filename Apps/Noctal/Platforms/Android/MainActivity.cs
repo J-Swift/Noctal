@@ -1,15 +1,14 @@
 ﻿using Android.App;
 using Android.Content.Res;
-using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.Content.Resources;
-using AndroidX.Core.Graphics.Drawable;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Google.Android.Material.BottomNavigation;
+using Noctal.Stories;
 using Noctal.UI.Theming;
 
 namespace Noctal;
@@ -85,7 +84,7 @@ public class MainActivity : AppCompatActivity
         };
 
         var dests = new NavDestination[] {
-            destFor(typeof(AndroidX.Fragment.App.Fragment), "navigation_home", "Home", "ic_home"),
+            destFor(typeof(StoriesPage), "navigation_stories", "Stories", "ic_home"),
             destFor(typeof(AndroidX.Fragment.App.Fragment), "navigation_search", "Search", "ic_search"),
             destFor(typeof(AndroidX.Fragment.App.Fragment), "navigation_account", "Account", "ic_person"),
             destFor(typeof(AndroidX.Fragment.App.Fragment), "navigation_settings", "Settings", "ic_settings"),

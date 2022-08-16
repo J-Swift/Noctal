@@ -11,32 +11,29 @@ public class ApplicationCoordinator : BaseCoordinator
         await base.Start();
 
         var idx = 0;
-        var addChild = (BaseCoordinator page, string title, string icName) =>
+        var addChild = (UIViewController page, string title, string icName) =>
         {
             var vc = new UIViewController { Title = title, };
             var image = UIImage.FromBundle(icName);
-            var navController = new UINavigationController(vc)
-            {
-                TabBarItem = new UITabBarItem(title, image, idx++),
-            };
-            TabController.AddChildViewController(navController);
+            page.TabBarItem = new UITabBarItem(title, image, idx++);
+            TabController.AddChildViewController(page);
         };
 
         var c1 = new StoriesCoordinator();
-        addChild(c1, "Home", "ic_home");
+        addChild(c1.RootPage, "Stories", "ic_home");
         ChildCoordinators.Add(c1);
 
-        var c2 = new SearchCoordinator();
-        addChild(c2, "Search", "ic_search");
-        ChildCoordinators.Add(c2);
+        //var c2 = new SearchCoordinator();
+        //addChild(c2, "Search", "ic_search");
+        //ChildCoordinators.Add(c2);
 
-        var c3 = new AccountCoordinator();
-        addChild(c3, "Account", "ic_person");
-        ChildCoordinators.Add(c3);
+        //var c3 = new AccountCoordinator();
+        //addChild(c3, "Account", "ic_person");
+        //ChildCoordinators.Add(c3);
 
-        var c4 = new SettingsCoordinator();
-        addChild(c4, "Settings", "ic_settings");
-        ChildCoordinators.Add(c4);
+        //var c4 = new SettingsCoordinator();
+        //addChild(c4, "Settings", "ic_settings");
+        //ChildCoordinators.Add(c4);
 
         await Task.WhenAll(ChildCoordinators.Select(it => it.Start()));
     }
