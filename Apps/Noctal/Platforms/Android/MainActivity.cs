@@ -9,16 +9,28 @@ using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Google.Android.Material.BottomNavigation;
 using Noctal.Stories;
+using Noctal.Stories.Models;
 using Noctal.UI.Theming;
+using static Noctal.FragmentFactory;
 
 namespace Noctal;
 
 [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true)]
-public class MainActivity : AppCompatActivity
+public class MainActivity : AppCompatActivity, IFragmentFactoryListener
 {
     static bool isNight = false;
+
+    private int detailFragId;
+
+    private FragmentFactory Factory = null!;
+
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        Factory = new FragmentFactory();
+        SupportFragmentManager.FragmentFactory = Factory;
+        Factory.RegisterListener(typeof(StoriesPage), this);
+        Factory.RegisterListener(typeof(StoryDetailPage), this);
+
         isNight = !isNight;
         AppCompatDelegate.DefaultNightMode = isNight ? AppCompatDelegate.ModeNightYes : AppCompatDelegate.ModeNightNo;
 
@@ -65,9 +77,8 @@ public class MainActivity : AppCompatActivity
         var navHost = (NavHostFragment)SupportFragmentManager.FindFragmentById(Resource.Id.nav_host_fragment_activity_main)!;
         var navController = navHost.NavController;
         var navigator = (FragmentNavigator)navController.NavigatorProvider.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
-        //var dialogNavigator = (DialogFragmentNavigator)navController.NavigatorProvider.GetNavigator(Java.Lang.Class.FromType(typeof(DialogFragmentNavigator)));
 
-        var destFor = (Type type, string id, string lbl, string icName) =>
+        var destForTopLevel = (Type type, string id, string lbl, string icName) =>
         {
             var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(type)))
             {
@@ -82,15 +93,34 @@ public class MainActivity : AppCompatActivity
             item.SetIcon(drawable);
             return res;
         };
+        var destFor = (Type type, string id, string lbl) =>
+        {
+            var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(type)))
+            {
+                Label = lbl,
+            };
 
-        var dests = new NavDestination[] {
-            destFor(typeof(StoriesPage), "navigation_stories", "Stories", "ic_home"),
-            destFor(typeof(AndroidX.Fragment.App.Fragment), "navigation_search", "Search", "ic_search"),
-            destFor(typeof(AndroidX.Fragment.App.Fragment), "navigation_account", "Account", "ic_person"),
-            destFor(typeof(AndroidX.Fragment.App.Fragment), "navigation_settings", "Settings", "ic_settings"),
+            var res = (FragmentNavigator.Destination)resBuilder.Build();
+            return res;
         };
 
-        var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, dests[0].Route!, null);
+        var topLevelDests = new NavDestination[] {
+            destForTopLevel(typeof(StoriesPage), "navigation_stories", "Stories", "ic_home"),
+            destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_search", "Search", "ic_search"),
+            destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_account", "Account", "ic_person"),
+            destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_settings", "Settings", "ic_settings"),
+        };
+        var dests = new NavDestination[] {
+            destFor(typeof(StoryDetailPage), "navigation_story", "Stories"),
+        };
+
+        detailFragId = dests[0].Id;
+
+        var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, topLevelDests[0].Route!, null);
+        foreach (var dest in topLevelDests)
+        {
+            graphBuilder.AddDestination(dest);
+        }
         foreach (var dest in dests)
         {
             graphBuilder.AddDestination(dest);
@@ -99,8 +129,35 @@ public class MainActivity : AppCompatActivity
 
         navController.SetGraph(graph, null);
 
-        var appBarConfiguration = new AppBarConfiguration(dests.Select(it => it.Id).ToArray(), null, null, null);
+        var appBarConfiguration = new AppBarConfiguration(topLevelDests.Select(it => it.Id).ToArray(), null, null, null);
         NavigationUI.SetupWithNavController(toolbar, navController, appBarConfiguration);
         NavigationUI.SetupWithNavController(navView, navController);
+    }
+
+    private StoriesFeedItem? SelectedItem;
+    public AndroidX.Fragment.App.Fragment? OnCreateFragment(string className)
+    {
+        if (className == Java.Lang.Class.FromType(typeof(StoriesPage)).Name)
+        {
+            var storiesFrag = new StoriesPage();
+            storiesFrag.OnItemSelected += OnStorySelected;
+            return storiesFrag;
+        }
+        else if (className == Java.Lang.Class.FromType(typeof(StoryDetailPage)).Name)
+        {
+            var storyFrag = new StoryDetailPage(SelectedItem!.Id);
+            return storyFrag;
+        }
+        return null;
+    }
+
+    private void OnStorySelected(object? sender, StoriesPage.EventArgs e)
+    {
+        Console.WriteLine($"Story Selected [{e.SelectedItem}]");
+        SelectedItem = e.SelectedItem;
+
+        var navCont = NavHostFragment.FindNavController(sender as AndroidX.Fragment.App.Fragment);
+        var nav = new ActionOnlyNavDirections(detailFragId);
+        navCont.Navigate(nav);
     }
 }

@@ -5,7 +5,6 @@ namespace Noctal;
 
 public abstract class BasePage<TViewModel> : ReactiveUI.ReactiveViewController<TViewModel> where TViewModel : class
 {
-    protected virtual void Initialize() { }
     protected abstract TViewModel CreateViewModel();
     protected abstract UIView CreateView();
     protected abstract void BindView(CompositeDisposable disposables);
@@ -14,13 +13,12 @@ public abstract class BasePage<TViewModel> : ReactiveUI.ReactiveViewController<T
 
     public BasePage()
     {
-        ViewModel = CreateViewModel();
-        Initialize();
         this.WhenActivated(disposables => BindView(disposables));
     }
 
     public override void LoadView()
     {
+        ViewModel = CreateViewModel();
         View = CreateView();
     }
 }

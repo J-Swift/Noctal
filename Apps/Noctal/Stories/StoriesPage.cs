@@ -1,3 +1,4 @@
+using Noctal.Stories.Models;
 using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
 
@@ -6,7 +7,6 @@ using Android.Content;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
-using Noctal.Stories.Models;
 #elif IOS
 using CoreGraphics;
 using Foundation;
@@ -17,7 +17,10 @@ namespace Noctal.Stories;
 
 public partial class StoriesPage : BasePage<StoriesViewModel>
 {
-    protected override StoriesViewModel CreateViewModel() => new();
+    public record EventArgs(StoriesFeedItem SelectedItem);
+    public EventHandler<EventArgs>? OnItemSelected;
+
+    protected override StoriesViewModel CreateViewModel() => new(new StoriesService());
 }
 
 #if ANDROID
@@ -37,13 +40,21 @@ public partial class StoriesPage
         Feed = new RecyclerView(ctx);
         Feed.SetLayoutManager(layoutManager);
         Feed.SetAdapter(adapter);
+        adapter.ItemSelected += Adapter_OnItemSelected;
         return Feed;
+    }
+
+    private void Adapter_OnItemSelected(object? sender, MyAdapter.EventArgs e)
+    {
+        OnItemSelected?.Invoke(this, new EventArgs(e.SelectedItem));
     }
 }
 
 class MyAdapter : RecyclerView.Adapter
 {
     private readonly ReadOnlyObservableCollection<StoriesFeedItem> Items;
+    public record EventArgs(StoriesFeedItem SelectedItem);
+    public EventHandler<EventArgs>? ItemSelected;
 
     public MyAdapter(ReadOnlyObservableCollection<StoriesFeedItem> items) : base()
     {
@@ -63,21 +74,37 @@ class MyAdapter : RecyclerView.Adapter
         var tHolder = (ViewHolder)holder;
         var item = Items[position];
 
-        tHolder.LblText.Text = item.Title;
+        tHolder.Bind(item, () => ItemSelected?.Invoke(this, new EventArgs(item)));
     }
 
     private class ViewHolder : RecyclerView.ViewHolder
     {
-        public readonly TextView LblText;
+        private readonly View Container;
+        private readonly TextView LblText;
+        private Action? OnClick;
 
         public ViewHolder(View view) : base(view)
         {
+            Container = view;
             LblText = view.FindViewById<TextView>(Android.Resource.Id.Text1)!;
+        }
+
+        public void Bind(StoriesFeedItem model, Action onClick)
+        {
+            LblText.Text = model.Title;
+            OnClick = onClick;
+            Container.Click -= HandleClick;
+            Container.Click += HandleClick;
+        }
+
+        private void HandleClick(object? sender, System.EventArgs e)
+        {
+            OnClick?.Invoke();
         }
     }
 }
 #elif IOS
-public partial class StoriesPage : IUICollectionViewDataSource//, IUITableViewDelegate
+public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionViewDelegate
 {
     private UICollectionView Feed { get; set; } = null!;
 
@@ -107,10 +134,21 @@ public partial class StoriesPage : IUICollectionViewDataSource//, IUITableViewDe
         Feed = new UICollectionView(CGRect.Empty, layout)
         {
             DataSource = this,
+            Delegate = this,
         };
         Feed.RegisterClassForCell(typeof(UICollectionViewCell), "cell");
 
         return Feed;
+    }
+
+    public override void ViewDidAppear(bool animated)
+    {
+        base.ViewDidAppear(animated);
+
+        foreach (var item in Feed.GetIndexPathsForSelectedItems())
+        {
+            Feed.DeselectItem(item, true);
+        }
     }
 
     [Export("numberOfSectionsInCollectionView:")]
@@ -125,6 +163,7 @@ public partial class StoriesPage : IUICollectionViewDataSource//, IUITableViewDe
         return SafeViewModel.Items.Count;
     }
 
+    [Export("collectionView:cellForItemAtIndexPath:")]
     public UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
     {
         var item = SafeViewModel.Items[indexPath.Row];
@@ -134,7 +173,17 @@ public partial class StoriesPage : IUICollectionViewDataSource//, IUITableViewDe
         contentConfig.Text = item.Title;
         cell.ContentConfiguration = contentConfig;
 
+        var bgConfig = UIBackgroundConfiguration.ListPlainCellConfiguration;
+        cell.BackgroundConfiguration = bgConfig;
+
         return cell;
+    }
+
+    [Export("collectionView:didSelectItemAtIndexPath:")]
+    public void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
+    {
+        var item = SafeViewModel.Items[indexPath.Row]!;
+        OnItemSelected?.Invoke(this, new EventArgs(item!));
     }
 }
 #endif

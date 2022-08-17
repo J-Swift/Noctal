@@ -8,7 +8,6 @@ namespace Noctal;
 
 public abstract partial class BasePage<TViewModel> : ReactiveUI.AndroidX.ReactiveFragment<TViewModel> where TViewModel : class
 {
-    protected virtual void Initialize() { }
     protected abstract TViewModel CreateViewModel();
     protected abstract View CreateView(Context ctx);
     protected abstract void BindView(CompositeDisposable disposables);
@@ -17,13 +16,12 @@ public abstract partial class BasePage<TViewModel> : ReactiveUI.AndroidX.Reactiv
 
     public BasePage()
     {
-        ViewModel = CreateViewModel();
-        Initialize();
         this.WhenActivated(disposables => BindView(disposables));
     }
 
     public override View? OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
     {
+        ViewModel = CreateViewModel();
         return CreateView(RequireContext());
     }
 }

@@ -13,6 +13,13 @@ public class StoriesCoordinator : BaseCoordinator
         await Task.Delay(0);
 
         var page = new StoriesPage { Title = "Stories" };
+        page.OnItemSelected += OnItemSelected;
+        Nav.PushViewController(page, true);
+    }
+
+    private void OnItemSelected(object? sender, StoriesPage.EventArgs e)
+    {
+        var page = new StoryDetailPage(e.SelectedItem.Id);
         Nav.PushViewController(page, true);
     }
 }
