@@ -6,6 +6,7 @@ using System.Reactive.Disposables;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
+using AndroidX.ConstraintLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 #elif IOS
 using CoreGraphics;
@@ -36,10 +37,12 @@ public partial class StoriesPage
     {
         var layoutManager = new LinearLayoutManager(ctx, LinearLayoutManager.Vertical, false);
         var adapter = new MyAdapter(SafeViewModel.Items);
+        var decor = new DividerItemDecoration(ctx, DividerItemDecoration.Vertical);
 
         Feed = new RecyclerView(ctx);
         Feed.SetLayoutManager(layoutManager);
         Feed.SetAdapter(adapter);
+        Feed.AddItemDecoration(decor);
         adapter.ItemSelected += Adapter_OnItemSelected;
         return Feed;
     }
@@ -65,8 +68,84 @@ class MyAdapter : RecyclerView.Adapter
 
     public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
     {
-        var view = LayoutInflater.FromContext(parent.Context!)?.Inflate(Android.Resource.Layout.SimpleListItem1, parent, false)!;
+        var view = CreateView(parent.Context!);
         return new ViewHolder(view);
+    }
+
+    private View CreateView(Android.Content.Context context)
+    {
+        var dimImg = context.ToPixels(70);
+        var dimVPadding = context.ToPixels(16);
+        var dimHPadding = context.ToPixels(20);
+        var dimSpacerPs = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, (int)dimVPadding);
+        var parent = ConstraintLayout.LayoutParams.ParentId;
+
+        var container = new ConstraintLayout(context);
+
+        var img = new View(context);
+        img.SetBackgroundColor(Colors.Red.WithAlpha(0.3f).ToPlatform());
+        img.Id = 282971;
+        container.AddView(img);
+
+        var sv = new LinearLayout(context)
+        {
+            Orientation = Orientation.Vertical,
+        };
+        sv.Id = 18310;
+        container.AddView(sv);
+
+        var spacer = new View(context);
+        sv.AddView(spacer, dimSpacerPs);
+
+        var tv = new TextView(context);
+        tv.Text = "26. thinkcomposer.com";
+        sv.AddView(tv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent));
+
+        spacer = new View(context);
+        sv.AddView(spacer, dimSpacerPs);
+
+        tv = new TextView(context);
+        tv.Id = Android.Resource.Id.Text1;
+        sv.AddView(tv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent));
+
+        spacer = new View(context);
+        sv.AddView(spacer, dimSpacerPs);
+
+        tv = new TextView(context);
+        tv.Text = "Tomte * 18h ago";
+        sv.AddView(tv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent));
+
+        spacer = new View(context);
+        sv.AddView(spacer, dimSpacerPs);
+
+        tv = new TextView(context);
+        tv.Text = "^35 * 9 comments";
+        sv.AddView(tv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent));
+
+        spacer = new View(context);
+        sv.AddView(spacer, dimSpacerPs);
+
+        var ps = new ConstraintLayout.LayoutParams((int)dimImg, (int)dimImg);
+        //ps.ConstrainedWidth = true;
+        //ps.ConstrainedHeight = true;
+        ps.LeftToLeft = parent;
+        ps.RightToLeft = sv.Id;
+        ps.TopToTop = parent;
+        ps.MarginStart = (int)dimHPadding;
+        ps.BottomToBottom = parent;
+        img.LayoutParameters = ps;
+
+        ps = new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MatchConstraint, ConstraintLayout.LayoutParams.WrapContent);
+        ps.ConstrainedHeight = true;
+        ps.LeftToRight = img.Id;
+        ps.RightToRight = parent;
+        ps.TopToTop = parent;
+        ps.BottomToBottom = parent;
+        ps.SetMargins(top: 0, bottom: 0, left: (int)dimHPadding, right: (int)dimHPadding);
+        sv.LayoutParameters = ps;
+
+        container.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+        return container;
     }
 
     public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
