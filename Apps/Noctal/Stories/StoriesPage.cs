@@ -11,6 +11,8 @@ using AndroidX.RecyclerView.Widget;
 #elif IOS
 using CoreGraphics;
 using Foundation;
+using ObjCRuntime;
+using System.Runtime.InteropServices;
 using UIKit;
 #endif
 
@@ -22,6 +24,16 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
     public EventHandler<EventArgs>? OnItemSelected;
 
     protected override StoriesViewModel CreateViewModel() => new(new StoriesService());
+
+    public static class Dims
+    {
+        public static readonly double DimImg = 70;
+        public static readonly double DimImgRadius = 4;
+        public static readonly double DimVPadding = 16;
+        public static readonly double DimHPadding = 20;
+
+        public static readonly double DimEstimatedCellHeight = 160;
+    }
 }
 
 #if ANDROID
@@ -74,9 +86,9 @@ class MyAdapter : RecyclerView.Adapter
 
     private View CreateView(Android.Content.Context context)
     {
-        var dimImg = context.ToPixels(70);
-        var dimVPadding = context.ToPixels(16);
-        var dimHPadding = context.ToPixels(20);
+        var dimImg = context.ToPixels(StoriesPage.Dims.DimImg);
+        var dimVPadding = context.ToPixels(StoriesPage.Dims.DimVPadding);
+        var dimHPadding = context.ToPixels(StoriesPage.Dims.DimHPadding);
         var dimSpacerPs = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, (int)dimVPadding);
         var parent = ConstraintLayout.LayoutParams.ParentId;
 
@@ -197,17 +209,18 @@ public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionVie
 
         var itemSize = NSCollectionLayoutSize.Create(
             NSCollectionLayoutDimension.CreateFractionalWidth(1),
-            NSCollectionLayoutDimension.CreateEstimated(160)
+            NSCollectionLayoutDimension.CreateEstimated((NFloat)Dims.DimEstimatedCellHeight)
         );
         var item = NSCollectionLayoutItem.Create(itemSize);
 
         var groupSize = NSCollectionLayoutSize.Create(
             NSCollectionLayoutDimension.CreateFractionalWidth(1),
-            NSCollectionLayoutDimension.CreateEstimated(160)
+            NSCollectionLayoutDimension.CreateEstimated((NFloat)Dims.DimEstimatedCellHeight)
         );
         var group = NSCollectionLayoutGroup.CreateHorizontal(groupSize, item);
 
         var section = NSCollectionLayoutSection.Create(group);
+
         var layout = new UICollectionViewCompositionalLayout(section);
 
         Feed = new UICollectionView(CGRect.Empty, layout)
@@ -248,8 +261,8 @@ public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionVie
         var item = SafeViewModel.Items[indexPath.Row];
         var cell = (UICollectionViewCell)collectionView.DequeueReusableCell("cell", indexPath);
 
-        var contentConfig = UIListContentConfiguration.ValueCellConfiguration;
-        contentConfig.Text = item.Title;
+        var contentConfig = new StoryFeedView.StoryFeedConfiguration();
+        contentConfig.TitleText = item.Title;
         cell.ContentConfiguration = contentConfig;
 
         var bgConfig = UIBackgroundConfiguration.ListPlainCellConfiguration;
@@ -263,6 +276,127 @@ public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionVie
     {
         var item = SafeViewModel.Items[indexPath.Row]!;
         OnItemSelected?.Invoke(this, new EventArgs(item!));
+    }
+}
+
+class StoryFeedView : UIView, IUIContentView
+{
+    public class StoryFeedConfiguration : NSObject, IUIContentConfiguration
+    {
+        public string? TitleText { get; set; }
+
+        [return: Release]
+        public NSObject Copy(NSZone? zone)
+        {
+            return new StoryFeedConfiguration
+            {
+                TitleText = TitleText,
+            };
+        }
+
+        public IUIContentConfiguration GetUpdatedConfiguration(IUIConfigurationState state) => this;
+
+        public IUIContentView MakeContentView()
+        {
+            return new StoryFeedView(this);
+        }
+    }
+
+    private readonly NoctalLabel LblTitle;
+
+
+    private IUIContentConfiguration _configuration;
+    public IUIContentConfiguration Configuration
+    {
+        get => _configuration;
+        set
+        {
+            _configuration = value;
+            updateConfiguration(value);
+        }
+    }
+
+    private StoryFeedView(StoryFeedConfiguration configuration) : base(CGRect.Empty)
+    {
+        _configuration = configuration;
+
+        var img = new UIView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform(),
+        };
+        img.Layer.CornerRadius = (nfloat)StoriesPage.Dims.DimImgRadius;
+        AddSubview(img);
+
+        var sv = new UIStackView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Axis = UILayoutConstraintAxis.Vertical,
+            Spacing = (nfloat)StoriesPage.Dims.DimVPadding,
+        };
+        AddSubview(sv);
+
+        var lbl = new NoctalLabel
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Text = "26. thinkcomposer.com",
+        };
+        sv.AddArrangedSubview(lbl);
+        lbl = new NoctalLabel
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Text = "",
+            Lines = 0,
+        };
+        LblTitle = lbl;
+        sv.AddArrangedSubview(lbl);
+        lbl = new NoctalLabel
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Text = "Tomte * 18h ago",
+        };
+        sv.AddArrangedSubview(lbl);
+        lbl = new NoctalLabel
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Text = "^35 * 9 comments",
+        };
+        sv.AddArrangedSubview(lbl);
+
+        var separator = new UIView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            BackgroundColor = UIColor.OpaqueSeparator,
+        };
+        AddSubview(separator);
+
+        NSLayoutConstraint.ActivateConstraints(new[]
+        {
+            separator.HeightAnchor.ConstraintEqualTo(1),
+            separator.LeadingAnchor.ConstraintEqualTo(LeadingAnchor),
+            separator.TrailingAnchor.ConstraintEqualTo(TrailingAnchor),
+            separator.BottomAnchor.ConstraintEqualTo(BottomAnchor),
+
+            img.LeadingAnchor.ConstraintEqualTo(LeadingAnchor, (nfloat)StoriesPage.Dims.DimHPadding),
+            img.CenterYAnchor.ConstraintEqualTo(CenterYAnchor),
+            img.WidthAnchor.ConstraintEqualTo((nfloat)StoriesPage.Dims.DimImg),
+            img.HeightAnchor.ConstraintEqualTo(img.WidthAnchor),
+
+            sv.LeadingAnchor.ConstraintEqualTo(img.TrailingAnchor, (nfloat)StoriesPage.Dims.DimHPadding),
+            sv.TrailingAnchor.ConstraintEqualTo(TrailingAnchor, -(nfloat)StoriesPage.Dims.DimHPadding),
+            sv.TopAnchor.ConstraintEqualTo(TopAnchor, (nfloat)StoriesPage.Dims.DimVPadding),
+            sv.BottomAnchor.ConstraintEqualTo(separator.TopAnchor, -(nfloat)StoriesPage.Dims.DimVPadding),
+        });
+
+        updateConfiguration(configuration);
+    }
+
+    private void updateConfiguration(IUIContentConfiguration weakConfig)
+    {
+        if (weakConfig is StoryFeedConfiguration config)
+        {
+            LblTitle.Text = config.TitleText;
+        }
     }
 }
 #endif
