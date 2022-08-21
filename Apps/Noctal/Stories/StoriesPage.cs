@@ -30,6 +30,7 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
         public static readonly double DimImg = 70;
         public static readonly double DimImgRadius = 4;
         public static readonly double DimVPadding = 16;
+        public static readonly double DimHPaddingRow = 4;
         public static readonly double DimHPadding = 20;
 
         public static readonly double DimEstimatedCellHeight = 160;
@@ -261,8 +262,16 @@ public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionVie
         var item = SafeViewModel.Items[indexPath.Row];
         var cell = (UICollectionViewCell)collectionView.DequeueReusableCell("cell", indexPath);
 
-        var contentConfig = new StoryFeedView.StoryFeedConfiguration();
-        contentConfig.TitleText = item.Title;
+        var contentConfig = new StoryFeedView.StoryFeedConfiguration
+        {
+            ItemNumber = indexPath.Row + 1,
+            Url = item.Url,
+            Title = item.Title,
+            Submitter = item.Submitter,
+            TimeAgo = item.TimeAgo,
+            Score = item.Score,
+            NumComments = item.NumComments,
+        };
         cell.ContentConfiguration = contentConfig;
 
         var bgConfig = UIBackgroundConfiguration.ListPlainCellConfiguration;
@@ -278,19 +287,31 @@ public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionVie
         OnItemSelected?.Invoke(this, new EventArgs(item!));
     }
 }
-
+//public record StoriesFeedItem(int Id, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments)
 class StoryFeedView : UIView, IUIContentView
 {
     public class StoryFeedConfiguration : NSObject, IUIContentConfiguration
     {
-        public string? TitleText { get; set; }
+        public int ItemNumber { get; set; }
+        public string Url { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string Submitter { get; set; } = "";
+        public string TimeAgo { get; set; } = "";
+        public int Score { get; set; }
+        public int NumComments { get; set; }
 
         [return: Release]
         public NSObject Copy(NSZone? zone)
         {
             return new StoryFeedConfiguration
             {
-                TitleText = TitleText,
+                ItemNumber = ItemNumber,
+                Url = Url,
+                Title = Title,
+                Submitter = Submitter,
+                TimeAgo = TimeAgo,
+                Score = Score,
+                NumComments = NumComments,
             };
         }
 
@@ -301,9 +322,6 @@ class StoryFeedView : UIView, IUIContentView
             return new StoryFeedView(this);
         }
     }
-
-    private readonly NoctalLabel LblTitle;
-
 
     private IUIContentConfiguration _configuration;
     public IUIContentConfiguration Configuration
@@ -316,9 +334,19 @@ class StoryFeedView : UIView, IUIContentView
         }
     }
 
+    private readonly NoctalLabel LblArticleNumber;
+    private readonly NoctalLabel LblUrl;
+    private readonly NoctalLabel LblTitle;
+    private readonly NoctalLabel LblAuthor;
+    private readonly NoctalLabel LblTimeAgo;
+    private readonly NoctalLabel LblScore;
+    private readonly NoctalLabel LblNumComments;
+
     private StoryFeedView(StoryFeedConfiguration configuration) : base(CGRect.Empty)
     {
         _configuration = configuration;
+
+        var makeLabel = () => new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false, };
 
         var img = new UIView
         {
@@ -332,36 +360,82 @@ class StoryFeedView : UIView, IUIContentView
         {
             TranslatesAutoresizingMaskIntoConstraints = false,
             Axis = UILayoutConstraintAxis.Vertical,
+            Alignment = UIStackViewAlignment.Leading,
             Spacing = (nfloat)StoriesPage.Dims.DimVPadding,
         };
         AddSubview(sv);
 
-        var lbl = new NoctalLabel
+        // Url Row
+
+        var row = new UIStackView
         {
             TranslatesAutoresizingMaskIntoConstraints = false,
-            Text = "26. thinkcomposer.com",
+            Axis = UILayoutConstraintAxis.Horizontal,
+            Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow,
         };
-        sv.AddArrangedSubview(lbl);
-        lbl = new NoctalLabel
-        {
-            TranslatesAutoresizingMaskIntoConstraints = false,
-            Text = "",
-            Lines = 0,
-        };
+
+        var lbl = makeLabel();
+        LblArticleNumber = lbl;
+        row.AddArrangedSubview(lbl);
+
+        lbl = makeLabel();
+        LblUrl = lbl;
+        row.AddArrangedSubview(lbl);
+
+        sv.AddArrangedSubview(row);
+
+        // Title Row
+
+        lbl = makeLabel();
+        lbl.Lines = 0;
         LblTitle = lbl;
         sv.AddArrangedSubview(lbl);
-        lbl = new NoctalLabel
+
+        // Author Row
+
+        row = new UIStackView
         {
             TranslatesAutoresizingMaskIntoConstraints = false,
-            Text = "Tomte * 18h ago",
+            Axis = UILayoutConstraintAxis.Horizontal,
+            Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow,
         };
-        sv.AddArrangedSubview(lbl);
-        lbl = new NoctalLabel
+
+        lbl = makeLabel();
+        LblAuthor = lbl;
+        row.AddArrangedSubview(lbl);
+
+        lbl = makeLabel();
+        lbl.Text = "•";
+        row.AddArrangedSubview(lbl);
+
+        lbl = makeLabel();
+        LblTimeAgo = lbl;
+        row.AddArrangedSubview(lbl);
+
+        sv.AddArrangedSubview(row);
+
+        // Score Row
+
+        row = new UIStackView
         {
             TranslatesAutoresizingMaskIntoConstraints = false,
-            Text = "^35 * 9 comments",
+            Axis = UILayoutConstraintAxis.Horizontal,
+            Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow,
         };
-        sv.AddArrangedSubview(lbl);
+
+        lbl = makeLabel();
+        LblScore = lbl;
+        row.AddArrangedSubview(lbl);
+
+        lbl = makeLabel();
+        lbl.Text = "•";
+        row.AddArrangedSubview(lbl);
+
+        lbl = makeLabel();
+        LblNumComments = lbl;
+        row.AddArrangedSubview(lbl);
+
+        sv.AddArrangedSubview(row);
 
         var separator = new UIView
         {
@@ -395,7 +469,13 @@ class StoryFeedView : UIView, IUIContentView
     {
         if (weakConfig is StoryFeedConfiguration config)
         {
-            LblTitle.Text = config.TitleText;
+            LblArticleNumber.Text = $"{config.ItemNumber}.";
+            LblUrl.Text = config.Url;
+            LblTitle.Text = config.Title;
+            LblAuthor.Text = config.Submitter;
+            LblTimeAgo.Text = config.TimeAgo;
+            LblScore.Text = config.Score.ToString();
+            LblNumComments.Text = $"{config.NumComments} comment" + (config.NumComments > 1 ? "s" : "");
         }
     }
 }
