@@ -14,4 +14,9 @@ public class StoriesViewModel : BaseViewModel
     {
         Items = storiesService.Stories;
     }
+
+    public StoriesFeedItem GetItem(int id)
+    {
+        return Items.First(it => it.Id == id);
+    }
 }

@@ -196,13 +196,12 @@ class MyAdapter : RecyclerView.Adapter
     }
 }
 #elif IOS
-public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionViewDelegate
+public partial class StoriesPage : IUICollectionViewDelegate
 {
     private UICollectionView Feed { get; set; } = null!;
+    private UICollectionViewDiffableDataSource<NSNumber, NSNumber> DataSource { get; set; } = null!;
 
-    protected override void BindView(CompositeDisposable disposables)
-    {
-    }
+    protected override void BindView(CompositeDisposable disposables) { }
 
     protected override UIView CreateView()
     {
@@ -226,12 +225,47 @@ public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionVie
 
         Feed = new UICollectionView(CGRect.Empty, layout)
         {
-            DataSource = this,
             Delegate = this,
         };
+
+        var cellReg = UICollectionViewCellRegistration.GetRegistration(typeof(UICollectionViewCell), (cell, indexPath, item) =>
+        {
+            var tItem = ((ObjectWrapper<StoriesFeedItem>)item).Value;
+            var contentConfig = new StoryFeedView.StoryFeedConfiguration
+            {
+                ItemNumber = indexPath.Row + 1,
+                Url = tItem.Url,
+                Title = tItem.Title,
+                Submitter = tItem.Submitter,
+                TimeAgo = tItem.TimeAgo,
+                Score = tItem.Score,
+                NumComments = tItem.NumComments,
+            };
+            cell.ContentConfiguration = contentConfig;
+
+            var bgConfig = UIBackgroundConfiguration.ListPlainCellConfiguration;
+            cell.BackgroundConfiguration = bgConfig;
+        });
+
+        DataSource = new UICollectionViewDiffableDataSource<NSNumber, NSNumber>(Feed, (collectionView, indexPath, itemIdentifier) =>
+        {
+            var item = SafeViewModel.GetItem(((NSNumber)itemIdentifier).Int32Value);
+            return collectionView.DequeueConfiguredReusableCell(cellReg, indexPath, new ObjectWrapper<StoriesFeedItem>(item));
+        });
+
         Feed.RegisterClassForCell(typeof(UICollectionViewCell), "cell");
 
         return Feed;
+    }
+
+    public override void ViewDidLoad()
+    {
+        base.ViewDidLoad();
+
+        var snapshot = new NSDiffableDataSourceSnapshot<NSNumber, NSNumber>();
+        snapshot.AppendSections(new NSNumber[] { 1 });
+        snapshot.AppendItems(SafeViewModel.Items.Select(it => (NSNumber)it.Id).ToArray(), 1);
+        DataSource.ApplySnapshot(snapshot, true);
     }
 
     public override void ViewDidAppear(bool animated)
@@ -244,42 +278,6 @@ public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionVie
         }
     }
 
-    [Export("numberOfSectionsInCollectionView:")]
-    public nint NumberOfSections(UICollectionView collectionView)
-    {
-        return 1;
-    }
-
-    [Export("collectionView:numberOfItemsInSection:")]
-    public nint GetItemsCount(UICollectionView collectionView, nint section)
-    {
-        return SafeViewModel.Items.Count;
-    }
-
-    [Export("collectionView:cellForItemAtIndexPath:")]
-    public UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
-    {
-        var item = SafeViewModel.Items[indexPath.Row];
-        var cell = (UICollectionViewCell)collectionView.DequeueReusableCell("cell", indexPath);
-
-        var contentConfig = new StoryFeedView.StoryFeedConfiguration
-        {
-            ItemNumber = indexPath.Row + 1,
-            Url = item.Url,
-            Title = item.Title,
-            Submitter = item.Submitter,
-            TimeAgo = item.TimeAgo,
-            Score = item.Score,
-            NumComments = item.NumComments,
-        };
-        cell.ContentConfiguration = contentConfig;
-
-        var bgConfig = UIBackgroundConfiguration.ListPlainCellConfiguration;
-        cell.BackgroundConfiguration = bgConfig;
-
-        return cell;
-    }
-
     [Export("collectionView:didSelectItemAtIndexPath:")]
     public void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
     {
@@ -287,6 +285,7 @@ public partial class StoriesPage : IUICollectionViewDataSource, IUICollectionVie
         OnItemSelected?.Invoke(this, new EventArgs(item!));
     }
 }
+
 //public record StoriesFeedItem(int Id, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments)
 class StoryFeedView : UIView, IUIContentView
 {
@@ -477,6 +476,16 @@ class StoryFeedView : UIView, IUIContentView
             LblScore.Text = config.Score.ToString();
             LblNumComments.Text = $"{config.NumComments} comment" + (config.NumComments > 1 ? "s" : "");
         }
+    }
+}
+
+class ObjectWrapper<T> : NSObject where T : class
+{
+    public T Value { get; }
+
+    public ObjectWrapper(T value) : base()
+    {
+        Value = value;
     }
 }
 #endif
