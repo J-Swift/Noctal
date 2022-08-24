@@ -8,6 +8,8 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
 using AndroidX.RecyclerView.Widget;
+using Google.Android.Material.Shape;
+using static Android.Content.Res.Resources;
 #elif IOS
 using CoreGraphics;
 using Foundation;
@@ -42,9 +44,7 @@ public partial class StoriesPage
 {
     private RecyclerView Feed { get; set; } = null!;
 
-    protected override void BindView(CompositeDisposable disposables)
-    {
-    }
+    protected override void BindView(CompositeDisposable disposables) { }
 
     protected override View CreateView(Context ctx)
     {
@@ -72,6 +72,14 @@ class MyAdapter : RecyclerView.Adapter
     public record EventArgs(StoriesFeedItem SelectedItem);
     public EventHandler<EventArgs>? ItemSelected;
 
+    private static readonly int LblArticleNumberId = 839183;
+    private static readonly int LblUrlId = 18809001;
+    private static readonly int LblTitleId = 859891;
+    private static readonly int LblAuthorId = 585981;
+    private static readonly int LblTimeAgoId = 38981;
+    private static readonly int LblScoreId = 1828984;
+    private static readonly int LblNumCommentsId = 284981;
+
     public MyAdapter(ReadOnlyObservableCollection<StoriesFeedItem> items) : base()
     {
         Items = items;
@@ -88,59 +96,145 @@ class MyAdapter : RecyclerView.Adapter
     private View CreateView(Android.Content.Context context)
     {
         var dimImg = context.ToPixels(StoriesPage.Dims.DimImg);
+        var dimImgRadius = context.ToPixels(StoriesPage.Dims.DimImgRadius);
         var dimVPadding = context.ToPixels(StoriesPage.Dims.DimVPadding);
         var dimHPadding = context.ToPixels(StoriesPage.Dims.DimHPadding);
-        var dimSpacerPs = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, (int)dimVPadding);
+        var dimHPaddingRow = context.ToPixels(StoriesPage.Dims.DimHPaddingRow);
+        var dimVSpacerPs = new LinearLayout.LayoutParams(1, (int)dimVPadding);
+        var dimHSpacerPs = new LinearLayout.LayoutParams((int)dimHPaddingRow, 1);
         var parent = ConstraintLayout.LayoutParams.ParentId;
 
         var container = new ConstraintLayout(context);
 
-        var img = new View(context);
-        img.SetBackgroundColor(Colors.Red.WithAlpha(0.3f).ToPlatform());
-        img.Id = 282971;
+        var shapeModel = new ShapeAppearanceModel().ToBuilder()
+                .SetAllCorners(CornerFamily.Rounded, dimImgRadius)
+                .Build();
+        var shape = new MaterialShapeDrawable(shapeModel);
+        shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
+
+        var img = new View(context)
+        {
+            Id = 282971,
+            Background = shape,
+        };
+
         container.AddView(img);
 
         var sv = new LinearLayout(context)
         {
             Orientation = Orientation.Vertical,
+            Id = 18310,
         };
-        sv.Id = 18310;
         container.AddView(sv);
 
+        // Url Row
+
+        var row = new LinearLayout(context)
+        {
+            Orientation = Orientation.Horizontal,
+        };
+
+        var tv = new NoctalLabel(context)
+        {
+            Id = LblArticleNumberId,
+        };
+        row.AddView(tv);
+
         var spacer = new View(context);
-        sv.AddView(spacer, dimSpacerPs);
+        row.AddView(spacer, dimHSpacerPs);
 
-        var tv = new TextView(context);
-        tv.Text = "26. thinkcomposer.com";
-        sv.AddView(tv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent));
+        tv = new NoctalLabel(context)
+        {
+            Id = LblUrlId,
+        };
+        row.AddView(tv);
 
-        spacer = new View(context);
-        sv.AddView(spacer, dimSpacerPs);
+        sv.AddView(row);
 
-        tv = new TextView(context);
-        tv.Id = Android.Resource.Id.Text1;
-        sv.AddView(tv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent));
+        // Title Row
 
-        spacer = new View(context);
-        sv.AddView(spacer, dimSpacerPs);
-
-        tv = new TextView(context);
-        tv.Text = "Tomte * 18h ago";
-        sv.AddView(tv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent));
+        tv = new NoctalLabel(context)
+        {
+            Id = LblTitleId,
+        };
 
         spacer = new View(context);
-        sv.AddView(spacer, dimSpacerPs);
+        sv.AddView(spacer, dimVSpacerPs);
+        sv.AddView(tv);
 
-        tv = new TextView(context);
-        tv.Text = "^35 * 9 comments";
-        sv.AddView(tv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent, LinearLayout.LayoutParams.WrapContent));
+        // Author Row
+
+        row = new LinearLayout(context)
+        {
+            Orientation = Orientation.Horizontal,
+        };
+
+        tv = new NoctalLabel(context)
+        {
+            Id = LblAuthorId,
+        };
+        row.AddView(tv);
 
         spacer = new View(context);
-        sv.AddView(spacer, dimSpacerPs);
+        row.AddView(spacer, dimHSpacerPs);
+
+        tv = new NoctalLabel(context)
+        {
+            Text = "•",
+        };
+        row.AddView(tv);
+
+        spacer = new View(context);
+        row.AddView(spacer, dimHSpacerPs);
+
+        tv = new NoctalLabel(context)
+        {
+            Id = LblTimeAgoId,
+            Text = "•",
+        };
+        row.AddView(tv);
+
+        spacer = new View(context);
+        sv.AddView(spacer, dimVSpacerPs);
+        sv.AddView(row);
+
+        // Score Row
+
+        row = new LinearLayout(context)
+        {
+            Orientation = Orientation.Horizontal,
+        };
+
+        tv = new NoctalLabel(context)
+        {
+            Id = LblScoreId,
+        };
+        row.AddView(tv);
+
+        spacer = new View(context);
+        row.AddView(spacer, dimHSpacerPs);
+
+        tv = new NoctalLabel(context)
+        {
+            Text = "•",
+        };
+        row.AddView(tv);
+
+        spacer = new View(context);
+        row.AddView(spacer, dimHSpacerPs);
+
+        tv = new NoctalLabel(context)
+        {
+            Id = LblNumCommentsId,
+            Text = "•",
+        };
+        row.AddView(tv);
+
+        spacer = new View(context);
+        sv.AddView(spacer, dimVSpacerPs);
+        sv.AddView(row);
 
         var ps = new ConstraintLayout.LayoutParams((int)dimImg, (int)dimImg);
-        //ps.ConstrainedWidth = true;
-        //ps.ConstrainedHeight = true;
         ps.LeftToLeft = parent;
         ps.RightToLeft = sv.Id;
         ps.TopToTop = parent;
@@ -154,7 +248,7 @@ class MyAdapter : RecyclerView.Adapter
         ps.RightToRight = parent;
         ps.TopToTop = parent;
         ps.BottomToBottom = parent;
-        ps.SetMargins(top: 0, bottom: 0, left: (int)dimHPadding, right: (int)dimHPadding);
+        ps.SetMargins(top: (int)dimVPadding, bottom: (int)dimVPadding, left: (int)dimHPadding, right: (int)dimHPadding);
         sv.LayoutParameters = ps;
 
         container.LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
@@ -166,24 +260,43 @@ class MyAdapter : RecyclerView.Adapter
         var tHolder = (ViewHolder)holder;
         var item = Items[position];
 
-        tHolder.Bind(item, () => ItemSelected?.Invoke(this, new EventArgs(item)));
+        tHolder.Bind(position + 1, item, () => ItemSelected?.Invoke(this, new EventArgs(item)));
     }
 
     private class ViewHolder : RecyclerView.ViewHolder
     {
         private readonly View Container;
-        private readonly TextView LblText;
+        private readonly NoctalLabel LblArticleNumber;
+        private readonly NoctalLabel LblUrl;
+        private readonly NoctalLabel LblTitle;
+        private readonly NoctalLabel LblAuthor;
+        private readonly NoctalLabel LblTimeAgo;
+        private readonly NoctalLabel LblScore;
+        private readonly NoctalLabel LblNumComments;
         private Action? OnClick;
 
         public ViewHolder(View view) : base(view)
         {
             Container = view;
-            LblText = view.FindViewById<TextView>(Android.Resource.Id.Text1)!;
+            LblArticleNumber = view.FindViewById<NoctalLabel>(LblArticleNumberId)!;
+            LblUrl = view.FindViewById<NoctalLabel>(LblUrlId)!;
+            LblTitle = view.FindViewById<NoctalLabel>(LblTitleId)!;
+            LblAuthor = view.FindViewById<NoctalLabel>(LblAuthorId)!;
+            LblTimeAgo = view.FindViewById<NoctalLabel>(LblTimeAgoId)!;
+            LblScore = view.FindViewById<NoctalLabel>(LblScoreId)!;
+            LblNumComments = view.FindViewById<NoctalLabel>(LblNumCommentsId)!;
         }
 
-        public void Bind(StoriesFeedItem model, Action onClick)
+        public void Bind(int articleNumber, StoriesFeedItem model, Action onClick)
         {
-            LblText.Text = model.Title;
+            LblArticleNumber.Text = $"{articleNumber}.";
+            LblUrl.Text = model.Url;
+            LblTitle.Text = model.Title;
+            LblAuthor.Text = model.Submitter;
+            LblTimeAgo.Text = model.TimeAgo;
+            LblScore.Text = model.Score.ToString();
+            LblNumComments.Text = $"{model.NumComments} comment" + (model.NumComments > 1 ? "s" : "");
+
             OnClick = onClick;
             Container.Click -= HandleClick;
             Container.Click += HandleClick;
