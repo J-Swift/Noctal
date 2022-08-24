@@ -1,5 +1,4 @@
 using Noctal.Stories.Models;
-using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
 
 #if ANDROID
@@ -43,20 +42,21 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
 public partial class StoriesPage
 {
     private RecyclerView Feed { get; set; } = null!;
+    private MyAdapter ItemAdapter { get; set; } = null!;
 
     protected override void BindView(CompositeDisposable disposables) { }
 
     protected override View CreateView(Context ctx)
     {
         var layoutManager = new LinearLayoutManager(ctx, LinearLayoutManager.Vertical, false);
-        var adapter = new MyAdapter(SafeViewModel.Items);
+        ItemAdapter = new MyAdapter(SafeViewModel.Items);
         var decor = new DividerItemDecoration(ctx, DividerItemDecoration.Vertical);
 
         Feed = new RecyclerView(ctx);
         Feed.SetLayoutManager(layoutManager);
-        Feed.SetAdapter(adapter);
+        Feed.SetAdapter(ItemAdapter);
         Feed.AddItemDecoration(decor);
-        adapter.ItemSelected += Adapter_OnItemSelected;
+        ItemAdapter.ItemSelected += Adapter_OnItemSelected;
         return Feed;
     }
 
@@ -68,7 +68,7 @@ public partial class StoriesPage
 
 class MyAdapter : RecyclerView.Adapter
 {
-    private readonly ReadOnlyObservableCollection<StoriesFeedItem> Items;
+    private IList<StoriesFeedItem> Items;
     public record EventArgs(StoriesFeedItem SelectedItem);
     public EventHandler<EventArgs>? ItemSelected;
 
@@ -80,9 +80,48 @@ class MyAdapter : RecyclerView.Adapter
     private static readonly int LblScoreId = 1828984;
     private static readonly int LblNumCommentsId = 284981;
 
-    public MyAdapter(ReadOnlyObservableCollection<StoriesFeedItem> items) : base()
+    public MyAdapter(IList<StoriesFeedItem> items) : base()
     {
         Items = items;
+    }
+
+    public void SetItems(IList<StoriesFeedItem> newItems)
+    {
+        var cb = new Callback(Items, newItems);
+        var diff = DiffUtil.CalculateDiff(cb);
+        Items = newItems;
+        diff.DispatchUpdatesTo(this);
+    }
+
+    private class Callback : DiffUtil.Callback
+    {
+        private readonly IList<StoriesFeedItem> OldList;
+        private readonly IList<StoriesFeedItem> NewList;
+
+        public Callback(IList<StoriesFeedItem> oldList, IList<StoriesFeedItem> newList)
+        {
+            OldList = oldList;
+            NewList = newList;
+        }
+
+        public override int OldListSize => OldList.Count;
+        public override int NewListSize => NewList.Count;
+
+        public override bool AreItemsTheSame(int oldItemPosition, int newItemPosition)
+        {
+            var oldItem = OldList[oldItemPosition];
+            var newItem = NewList[newItemPosition];
+
+            return oldItem.Id == newItem.Id;
+        }
+
+        public override bool AreContentsTheSame(int oldItemPosition, int newItemPosition)
+        {
+            var oldItem = OldList[oldItemPosition];
+            var newItem = NewList[newItemPosition];
+
+            return oldItem.Equals(newItem);
+        }
     }
 
     public override int ItemCount => Items.Count;
