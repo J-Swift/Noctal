@@ -4,6 +4,7 @@ using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.Content.Resources;
+using AndroidX.Lifecycle;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
@@ -22,10 +23,13 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
 
     private int detailFragId;
 
+    private AViewModel AViewModel = null!;
     private FragmentFactory Factory = null!;
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        AViewModel = (AViewModel)new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AViewModel)));
+
         Factory = new FragmentFactory();
         SupportFragmentManager.FragmentFactory = Factory;
         Factory.RegisterListener(typeof(StoriesPage), this);
@@ -134,7 +138,6 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
         NavigationUI.SetupWithNavController(navView, navController);
     }
 
-    private StoriesFeedItem? SelectedItem;
     public AndroidX.Fragment.App.Fragment? OnCreateFragment(string className)
     {
         if (className == Java.Lang.Class.FromType(typeof(StoriesPage)).Name)
@@ -145,7 +148,7 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
         }
         else if (className == Java.Lang.Class.FromType(typeof(StoryDetailPage)).Name)
         {
-            var storyFrag = new StoryDetailPage(SelectedItem!.Id);
+            var storyFrag = new StoryDetailPage(AViewModel.SelectedItem!.Id);
             return storyFrag;
         }
         return null;
@@ -154,10 +157,15 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
     private void OnStorySelected(object? sender, StoriesPage.EventArgs e)
     {
         Console.WriteLine($"Story Selected [{e.SelectedItem}]");
-        SelectedItem = e.SelectedItem;
+        AViewModel.SelectedItem = e.SelectedItem;
 
         var navCont = NavHostFragment.FindNavController(sender as AndroidX.Fragment.App.Fragment);
         var nav = new ActionOnlyNavDirections(detailFragId);
         navCont.Navigate(nav);
     }
+}
+
+class AViewModel : AndroidX.Lifecycle.ViewModel
+{
+    public StoriesFeedItem? SelectedItem { get; set; }
 }
