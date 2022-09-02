@@ -357,8 +357,6 @@ public partial class StoriesPage : IUICollectionViewDelegate
 
     protected override UIView CreateView()
     {
-        var view = new UIView();
-
         var itemSize = NSCollectionLayoutSize.Create(
             NSCollectionLayoutDimension.CreateFractionalWidth(1),
             NSCollectionLayoutDimension.CreateEstimated((NFloat)Dims.DimEstimatedCellHeight)

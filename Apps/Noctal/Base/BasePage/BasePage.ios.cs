@@ -20,5 +20,6 @@ public abstract class BasePage<TViewModel> : ReactiveUI.ReactiveViewController<T
     {
         ViewModel = CreateViewModel();
         View = CreateView();
+        View.BackgroundColor = SceneDelegate.Theme.BackgroundColor;
     }
 }

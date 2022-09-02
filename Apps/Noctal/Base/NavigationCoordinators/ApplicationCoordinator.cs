@@ -23,17 +23,17 @@ public class ApplicationCoordinator : BaseCoordinator
         addChild(c1.RootPage, "Stories", "ic_home");
         ChildCoordinators.Add(c1);
 
-        //var c2 = new SearchCoordinator();
-        //addChild(c2, "Search", "ic_search");
-        //ChildCoordinators.Add(c2);
+        var c2 = new SearchCoordinator();
+        addChild(c2.RootPage, "Search", "ic_search");
+        ChildCoordinators.Add(c2);
 
-        //var c3 = new AccountCoordinator();
-        //addChild(c3, "Account", "ic_person");
-        //ChildCoordinators.Add(c3);
+        var c3 = new AccountCoordinator();
+        addChild(c3.RootPage, "Account", "ic_person");
+        ChildCoordinators.Add(c3);
 
-        //var c4 = new SettingsCoordinator();
-        //addChild(c4, "Settings", "ic_settings");
-        //ChildCoordinators.Add(c4);
+        var c4 = new SettingsCoordinator();
+        addChild(c4.RootPage, "Settings", "ic_settings");
+        ChildCoordinators.Add(c4);
 
         await Task.WhenAll(ChildCoordinators.Select(it => it.Start()));
     }
