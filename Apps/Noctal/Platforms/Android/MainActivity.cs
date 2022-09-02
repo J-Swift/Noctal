@@ -3,6 +3,7 @@ using Android.Content.Res;
 using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
+using AndroidX.Core.Content;
 using AndroidX.Core.Content.Resources;
 using AndroidX.Lifecycle;
 using AndroidX.Navigation;
@@ -21,7 +22,7 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
 {
     static bool isNight = false;
 
-    private int detailFragId;
+    //private int detailFragId;
 
     private AViewModel AViewModel = null!;
     private FragmentFactory Factory = null!;
@@ -82,58 +83,106 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
         var navController = navHost.NavController;
         var navigator = (FragmentNavigator)navController.NavigatorProvider.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
 
-        var destForTopLevel = (Type type, string id, string lbl, string icName) =>
+        var applicationCoord = new ApplicationCoordinator();
+        var appGraph = applicationCoord.GetGraph();
+
+        var destForTopLevel = (TopLevelEntry e) =>
         {
-            var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(type)))
+            var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, e.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(e.PageType)))
             {
-                Label = lbl,
+                Label = e.Label,
             };
 
             var res = (FragmentNavigator.Destination)resBuilder.Build();
+
+            var drawable = ContextCompat.GetDrawable(this, e.IconResId);
             var item = navView.Menu.Add(IMenu.None, res.Id, IMenu.None, res.Label)!;
-
-            var resId = resources.GetIdentifier(icName, "drawable", PackageName);
-            var drawable = ResourcesCompat.GetDrawable(resources, resId, null)!;
             item.SetIcon(drawable);
+
             return res;
         };
-        var destFor = (Type type, string id, string lbl) =>
+        var destFor = (BasicNavEntry e) =>
         {
-            var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(type)))
+            var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, e.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(e.PageType)))
             {
-                Label = lbl,
+                Label = e.Label,
             };
 
             var res = (FragmentNavigator.Destination)resBuilder.Build();
             return res;
         };
 
-        var topLevelDests = new NavDestination[] {
-            destForTopLevel(typeof(StoriesPage), "navigation_stories", "Stories", "ic_home"),
-            destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_search", "Search", "ic_search"),
-            destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_account", "Account", "ic_person"),
-            destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_settings", "Settings", "ic_settings"),
-        };
-        var dests = new NavDestination[] {
-            destFor(typeof(StoryDetailPage), "navigation_story", "Stories"),
-        };
+        var topLevelDests = new List<int>();
+        //var topLevelDests = new List<NavDestination>();
+        //var topLevelDests = new NavDestination[] {
+        //    destForTopLevel(typeof(StoriesPage), "navigation_stories", "Stories", "ic_home"),
+        //    destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_search", "Search", "ic_search"),
+        //    destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_account", "Account", "ic_person"),
+        //    destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_settings", "Settings", "ic_settings"),
+        //};
+        //var dests = new NavDestination[] {
+        //    destFor(typeof(StoryDetailPage), "navigation_story", "Stories"),
+        //};
 
-        detailFragId = dests[0].Id;
+        //detailFragId = dests[0].Id;
 
-        var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, topLevelDests[0].Route!, null);
-        foreach (var dest in topLevelDests)
+        var mainGraph = (NavGraph)new NavGraphBuilder(navController.NavigatorProvider, "navigation_home", "main_graph").Build();
+
+        foreach (var subgraphConfig in appGraph)
         {
-            graphBuilder.AddDestination(dest);
+            //topLevelDests.
+            var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, subgraphConfig.StartDestId, subgraphConfig.SubgraphId);
+            foreach (var entry in subgraphConfig.SubItems)
+            {
+                switch (entry)
+                {
+                    case TopLevelEntry topLevel:
+                        {
+                            var dest = destForTopLevel(topLevel);
+                            graphBuilder.AddDestination(dest);
+                            topLevelDests.Add(dest.Id);
+                            break;
+                        }
+                    case BasicNavEntry basic:
+                        {
+                            var dest = destFor(basic);
+                            graphBuilder.AddDestination(dest);
+                            break;
+                        }
+                    default:
+                        throw new ArgumentException($"unknown type: [{entry}]");
+                }
+            }
+            var subgraph = (NavGraph)graphBuilder.Build();
+            for (int i = 0; i < subgraph.Nodes.Size(); i++)
+            {
+                Console.WriteLine($"JIMMY NODE [{subgraph.Route}] [{subgraph.Nodes.KeyAt(i)}] [{subgraph.Nodes.ValueAt(i)}]");
+            }
+            mainGraph.AddAll(subgraph);
+            //mainGraph.Add
+            //var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, subgraph.SubgraphId, null);
         }
-        foreach (var dest in dests)
+        Console.WriteLine("-------------------------");
+        for (int i = 0; i < mainGraph.Nodes.Size(); i++)
         {
-            graphBuilder.AddDestination(dest);
+            Console.WriteLine($"JIMMY NODE [{mainGraph.Route}] [{mainGraph.Nodes.KeyAt(i)}] [{mainGraph.Nodes.ValueAt(i)}]");
         }
-        var graph = (NavGraph)graphBuilder.Build();
 
-        navController.SetGraph(graph, null);
+        //var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, topLevelDests[0].Route!, null);
+        //foreach (var dest in topLevelDests)
+        //{
+        //    graphBuilder.AddDestination(dest);
+        //}
+        //foreach (var dest in dests)
+        //{
+        //    graphBuilder.AddDestination(dest);
+        //}
+        //var graph = (NavGraph)graphBuilder.Build();
 
-        var appBarConfiguration = new AppBarConfiguration(topLevelDests.Select(it => it.Id).ToArray(), null, null, null);
+        navController.SetGraph(mainGraph, null);
+
+        var appBarConfiguration = new AppBarConfiguration.Builder(topLevelDests.ToArray()).Build();
+        //new AppBarConfiguration(topLevelDests, null, null, null);
         NavigationUI.SetupWithNavController(toolbar, navController, appBarConfiguration);
         NavigationUI.SetupWithNavController(navView, navController);
     }
@@ -157,11 +206,11 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
     private void OnStorySelected(object? sender, StoriesPage.EventArgs e)
     {
         Console.WriteLine($"Story Selected [{e.SelectedItem}]");
-        AViewModel.SelectedItem = e.SelectedItem;
+        //AViewModel.SelectedItem = e.SelectedItem;
 
-        var navCont = NavHostFragment.FindNavController(sender as AndroidX.Fragment.App.Fragment);
-        var nav = new ActionOnlyNavDirections(detailFragId);
-        navCont.Navigate(nav);
+        //var navCont = NavHostFragment.FindNavController(sender as AndroidX.Fragment.App.Fragment);
+        //var nav = new ActionOnlyNavDirections(detailFragId);
+        //navCont.Navigate(nav);
     }
 }
 

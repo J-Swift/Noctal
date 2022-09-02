@@ -1,6 +1,17 @@
 namespace Noctal;
 
-#if IOS
+#if ANDROID
+public class SearchCoordinator : BaseCoordinator
+{
+    public override SubgraphEntry GetSubgraph()
+    {
+        return new SubgraphEntry("subnav_search", "navigation_search", new[]
+        {
+            new TopLevelEntry("navigation_search", typeof(AndroidX.Fragment.App.Fragment), "Search", Resource.Drawable.ic_search),
+        });
+    }
+}
+#elif IOS
 public class SearchCoordinator : BaseCoordinator
 {
     public UIViewController RootPage => NavController;

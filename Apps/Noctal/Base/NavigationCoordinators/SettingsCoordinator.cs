@@ -1,6 +1,19 @@
+using Noctal.Stories;
+
 namespace Noctal;
 
-#if IOS
+#if ANDROID
+public class SettingsCoordinator : BaseCoordinator
+{
+    public override SubgraphEntry GetSubgraph()
+    {
+        return new SubgraphEntry("subnav_settings", "navigation_settings", new[]
+        {
+            new TopLevelEntry("navigation_settings", typeof(AndroidX.Fragment.App.Fragment),"Settings", Resource.Drawable.ic_settings),
+        });
+    }
+}
+#elif IOS
 public class SettingsCoordinator : BaseCoordinator
 {
     public UIViewController RootPage => NavController;

@@ -1,6 +1,17 @@
 namespace Noctal;
 
-#if IOS
+#if ANDROID
+public class AccountCoordinator : BaseCoordinator
+{
+    public override SubgraphEntry GetSubgraph()
+    {
+        return new SubgraphEntry("subnav_account", "navigation_account", new[]
+        {
+            new TopLevelEntry("navigation_account", typeof(AndroidX.Fragment.App.Fragment), "Account", Resource.Drawable.ic_person),
+        });
+    }
+}
+#elif IOS
 public class AccountCoordinator : BaseCoordinator
 {
     public UIViewController RootPage => NavController;

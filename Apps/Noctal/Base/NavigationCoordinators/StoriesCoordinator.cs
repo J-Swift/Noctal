@@ -2,7 +2,19 @@ using Noctal.Stories;
 
 namespace Noctal;
 
-#if IOS
+#if ANDROID
+public class StoriesCoordinator : BaseCoordinator
+{
+    public override SubgraphEntry GetSubgraph()
+    {
+        return new SubgraphEntry("subnav_stories", "navigation_home", new[]
+        {
+            new TopLevelEntry("navigation_home", typeof(StoriesPage), "Stories", Resource.Drawable.ic_home),
+            new BasicNavEntry("navigation_story", typeof(StoryDetailPage), "Story"),
+        });
+    }
+}
+#elif IOS
 public class StoriesCoordinator : BaseCoordinator
 {
     public UIViewController RootPage => Nav;
