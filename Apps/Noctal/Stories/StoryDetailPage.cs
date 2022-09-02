@@ -229,7 +229,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         var scroll = new UIScrollView
         {
-            BackgroundColor = UIColor.SystemBackground,
+            BackgroundColor = SceneDelegate.Theme.BackgroundColor,
         };
 
         var sv = new UIStackView

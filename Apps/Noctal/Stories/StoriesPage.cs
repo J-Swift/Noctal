@@ -394,6 +394,15 @@ public partial class StoriesPage : IUICollectionViewDelegate
             cell.ContentConfiguration = contentConfig;
 
             var bgConfig = UIBackgroundConfiguration.ListPlainCellConfiguration;
+            bgConfig.BackgroundColorTransformer = (color) =>
+            {
+                var state = cell.ConfigurationState;
+                if (state.Highlighted || state.Selected)
+                {
+                    return UIColor.SystemGray3;
+                }
+                return UIColor.Clear;
+            };
             cell.BackgroundConfiguration = bgConfig;
         });
 
@@ -436,7 +445,6 @@ public partial class StoriesPage : IUICollectionViewDelegate
     }
 }
 
-//public record StoriesFeedItem(int Id, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments)
 class StoryFeedView : UIView, IUIContentView
 {
     public class StoryFeedConfiguration : NSObject, IUIContentConfiguration
