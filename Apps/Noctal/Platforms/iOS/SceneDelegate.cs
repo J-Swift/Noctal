@@ -33,14 +33,13 @@ public class SceneDelegate : UIWindowSceneDelegate
 
     private void ApplyTheme()
     {
-        //UITabBar.Appearance.BarStyle = UIBarStyle.Black;
-        //UITabBar.Appearance.BackgroundColor = Theme.BackgroundColor;
+        var navigationBarAppearance = new UINavigationBarAppearance();
+        navigationBarAppearance.BackgroundColor = Theme.BackgroundColor;
+        navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = Theme.OnBackgroundColor };
+        UINavigationBar.Appearance.StandardAppearance = UINavigationBar.Appearance.ScrollEdgeAppearance = navigationBarAppearance;
+        UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.LightContent;
+
         UITabBar.Appearance.SelectedImageTintColor = Theme.PrimaryColor;
         UITabBar.Appearance.UnselectedItemTintColor = Theme.OnBackgroundColor;
-
-        //UINavigationBar.Appearance.BarStyle = UIBarStyle.Black;
-        //UINavigationBar.Appearance.Translucent = false;
-        UINavigationBar.Appearance.BackgroundColor = Theme.BackgroundColor;
-        UINavigationBar.Appearance.TitleTextAttributes = new UIStringAttributes { ForegroundColor = Theme.OnBackgroundColor };
     }
 }
