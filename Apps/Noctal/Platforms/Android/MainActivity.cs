@@ -1,4 +1,5 @@
 ﻿using Android.App;
+using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Views;
@@ -77,24 +78,66 @@ public class MainActivity : AppCompatActivity
         var applicationCoord = Coordinator;
         var appGraph = applicationCoord.GetGraph();
 
+        var subGraphs = new List<string>();
+        var topLevelDests = new List<TopLevelEntry>();
+
+        var mainGraph = new NavGraphBuilder(navController.NavigatorProvider, "subnav_stories", "main_graph");
+
+        foreach (var subgraphConfig in appGraph)
+        {
+            var f = new GraphBuilder(this, subgraphConfig, navigator, topLevelDests);
+            NavGraphBuilderKt.Navigation(mainGraph, subgraphConfig.StartDestId, subgraphConfig.SubgraphId, f);
+            subGraphs.Add(subgraphConfig.SubgraphId);
+        }
+        var b = (NavGraph)mainGraph.Build();
+
+        navController.SetGraph(b, null);
+
+        foreach (var (t, s) in topLevelDests.Zip(subGraphs))
+        {
+            var drawable = ContextCompat.GetDrawable(this, t.IconResId);
+            var id = navController.FindDestination(s).Id;
+            var item = navView.Menu.Add(IMenu.None, id, IMenu.None, t.Label)!;
+            Console.WriteLine($"JIMMY menu item [s {s}] [id {id}] [tid {t.Id}]");
+            item.SetIcon(drawable);
+        }
+
+        var appBarConfiguration = new AppBarConfiguration.Builder(navView.Menu).Build();
+        NavigationUI.SetupWithNavController(toolbar, navController, appBarConfiguration);
+        NavigationUI.SetupWithNavController(navView, navController);
+    }
+}
+
+class GraphBuilder : Java.Lang.Object, Kotlin.Jvm.Functions.IFunction1
+{
+    private readonly SubgraphEntry Subgraph;
+    private readonly Android.Content.Context Context;
+    private readonly FragmentNavigator FragmentNavigator;
+    private readonly IList<TopLevelEntry> TopLevelDests;
+
+    public GraphBuilder(Android.Content.Context context, SubgraphEntry subgraph, FragmentNavigator fragmentNavigator, IList<TopLevelEntry> topLevelDests)
+    {
+        Context = context;
+        Subgraph = subgraph;
+        FragmentNavigator = fragmentNavigator;
+        TopLevelDests = topLevelDests;
+    }
+
+    public Java.Lang.Object? Invoke(Java.Lang.Object? p0)
+    {
         var destForTopLevel = (TopLevelEntry e) =>
         {
-            var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, e.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(e.PageType)))
+            var resBuilder = new FragmentNavigatorDestinationBuilder(FragmentNavigator, e.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(e.PageType)))
             {
                 Label = e.Label,
             };
 
             var res = (FragmentNavigator.Destination)resBuilder.Build();
-
-            var drawable = ContextCompat.GetDrawable(this, e.IconResId);
-            var item = navView.Menu.Add(IMenu.None, res.Id, IMenu.None, res.Label)!;
-            item.SetIcon(drawable);
-
             return res;
         };
         var destFor = (BasicNavEntry e) =>
         {
-            var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, e.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(e.PageType)))
+            var resBuilder = new FragmentNavigatorDestinationBuilder(FragmentNavigator, e.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(e.PageType)))
             {
                 Label = e.Label,
             };
@@ -103,43 +146,30 @@ public class MainActivity : AppCompatActivity
             return res;
         };
 
-        var topLevelDests = new List<int>();
+        var graphBuilder = (NavGraphBuilder)p0!;
 
-        var mainGraph = (NavGraph)new NavGraphBuilder(navController.NavigatorProvider, "navigation_home", "main_graph").Build();
-
-        foreach (var subgraphConfig in appGraph)
+        foreach (var entry in Subgraph.SubItems)
         {
-            var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, subgraphConfig.StartDestId, subgraphConfig.SubgraphId);
-            foreach (var entry in subgraphConfig.SubItems)
+            switch (entry)
             {
-                switch (entry)
-                {
-                    case TopLevelEntry topLevel:
-                        {
-                            var dest = destForTopLevel(topLevel);
-                            graphBuilder.AddDestination(dest);
-                            topLevelDests.Add(dest.Id);
-                            break;
-                        }
-                    case BasicNavEntry basic:
-                        {
-                            var dest = destFor(basic);
-                            graphBuilder.AddDestination(dest);
-                            break;
-                        }
-                    default:
-                        throw new ArgumentException($"unknown type: [{entry}]");
-                }
+                case TopLevelEntry topLevel:
+                    {
+                        var dest = destForTopLevel(topLevel);
+                        graphBuilder.AddDestination(dest);
+                        TopLevelDests.Add(topLevel);
+                        break;
+                    }
+                case BasicNavEntry basic:
+                    {
+                        var dest = destFor(basic);
+                        graphBuilder.AddDestination(dest);
+                        break;
+                    }
+                default:
+                    throw new ArgumentException($"unknown type: [{entry}]");
             }
-            var subgraph = (NavGraph)graphBuilder.Build();
-            mainGraph.AddAll(subgraph);
-            //mainGraph.
         }
 
-        navController.SetGraph(mainGraph, null);
-
-        var appBarConfiguration = new AppBarConfiguration.Builder(topLevelDests.ToArray()).Build();
-        NavigationUI.SetupWithNavController(toolbar, navController, appBarConfiguration);
-        NavigationUI.SetupWithNavController(navView, navController);
+        return graphBuilder;
     }
 }

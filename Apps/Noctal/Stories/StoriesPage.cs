@@ -41,7 +41,7 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
 #if ANDROID
 public partial class StoriesPage
 {
-    public const string NAVIGATION_ROUTE = "navigation_home";
+    public const string NAVIGATION_ROUTE = "navigation_stories";
 
     private RecyclerView Feed { get; set; } = null!;
     private MyAdapter ItemAdapter { get; set; } = null!;
