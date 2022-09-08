@@ -20,5 +20,10 @@ public abstract partial class BaseCoordinator
 {
     //public abstract IList<NavItem> GetNavEntries();
     public abstract SubgraphEntry GetSubgraph();
+
+    public BaseCoordinator()
+    {
+
+    }
 }
 #endif

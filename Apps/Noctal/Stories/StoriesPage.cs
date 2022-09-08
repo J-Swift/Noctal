@@ -22,7 +22,7 @@ namespace Noctal.Stories;
 public partial class StoriesPage : BasePage<StoriesViewModel>
 {
     public record EventArgs(StoriesFeedItem SelectedItem);
-    public EventHandler<EventArgs>? OnItemSelected;
+    public event EventHandler<EventArgs>? OnItemSelected;
 
     protected override StoriesViewModel CreateViewModel() => new(new StoriesService());
 
@@ -41,6 +41,8 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
 #if ANDROID
 public partial class StoriesPage
 {
+    public const string NAVIGATION_ROUTE = "navigation_home";
+
     private RecyclerView Feed { get; set; } = null!;
     private MyAdapter ItemAdapter { get; set; } = null!;
 

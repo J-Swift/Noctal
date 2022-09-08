@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 
 #if ANDROID
 using Android.Content;
+using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
@@ -19,10 +20,19 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private int StoryId { get; set; }
     protected override StoryDetailViewModel CreateViewModel() => new(StoryId, new StoriesService());
 
+#if ANDROID
+    private const string BUNDLE_STORY_ID = "story_id";
+    public override View? OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
+    {
+        StoryId = Arguments!.GetInt(BUNDLE_STORY_ID);
+        return base.OnCreateView(inflater, container, savedInstanceState);
+    }
+#elif IOS
     public StoryDetailPage(int storyId) : base()
     {
         StoryId = storyId;
     }
+#endif
 
     public static class Dims
     {
@@ -38,6 +48,16 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 #if ANDROID
 public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 {
+    public const string NAVIGATION_ROUTE = "navigation_story";
+
+    public static (int DestId, Bundle DestArgs) SafeNav(AndroidX.Navigation.NavController nav, int storyId)
+    {
+        var destId = nav.FindDestination(NAVIGATION_ROUTE).Id;
+        var bundle = new Bundle();
+        bundle.PutInt(BUNDLE_STORY_ID, storyId);
+        return (destId, bundle);
+    }
+
     private NoctalLabel LblTitle { get; set; } = null!;
     private NoctalLabel LblUrl { get; set; } = null!;
     private NoctalLabel LblScore { get; set; } = null!;

@@ -4,37 +4,29 @@ using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.Content;
-using AndroidX.Core.Content.Resources;
-using AndroidX.Lifecycle;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Google.Android.Material.BottomNavigation;
-using Noctal.Stories;
-using Noctal.Stories.Models;
 using Noctal.UI.Theming;
-using static Noctal.FragmentFactory;
 
 namespace Noctal;
 
 [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true)]
-public class MainActivity : AppCompatActivity, IFragmentFactoryListener
+public class MainActivity : AppCompatActivity
 {
     static bool isNight = false;
 
-    //private int detailFragId;
+    public FragmentFactory Factory { get; private set; } = null!;
+    public NavController Nav => ((NavHostFragment)SupportFragmentManager.FindFragmentById(Resource.Id.nav_host_fragment_activity_main)!).NavController;
 
-    private AViewModel AViewModel = null!;
-    private FragmentFactory Factory = null!;
+    private ApplicationCoordinator Coordinator = null!;
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
-        AViewModel = (AViewModel)new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AViewModel)));
-
         Factory = new FragmentFactory();
         SupportFragmentManager.FragmentFactory = Factory;
-        Factory.RegisterListener(typeof(StoriesPage), this);
-        Factory.RegisterListener(typeof(StoryDetailPage), this);
+        Coordinator = new ApplicationCoordinator(this);
 
         isNight = !isNight;
         AppCompatDelegate.DefaultNightMode = isNight ? AppCompatDelegate.ModeNightYes : AppCompatDelegate.ModeNightNo;
@@ -79,11 +71,10 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
         navView.ItemIconTintList = csl;
         var container = FindViewById<AndroidX.Fragment.App.FragmentContainerView>(Resource.Id.nav_host_fragment_activity_main)!;
         container.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
-        var navHost = (NavHostFragment)SupportFragmentManager.FindFragmentById(Resource.Id.nav_host_fragment_activity_main)!;
-        var navController = navHost.NavController;
+        var navController = Nav;
         var navigator = (FragmentNavigator)navController.NavigatorProvider.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
 
-        var applicationCoord = new ApplicationCoordinator();
+        var applicationCoord = Coordinator;
         var appGraph = applicationCoord.GetGraph();
 
         var destForTopLevel = (TopLevelEntry e) =>
@@ -113,24 +104,11 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
         };
 
         var topLevelDests = new List<int>();
-        //var topLevelDests = new List<NavDestination>();
-        //var topLevelDests = new NavDestination[] {
-        //    destForTopLevel(typeof(StoriesPage), "navigation_stories", "Stories", "ic_home"),
-        //    destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_search", "Search", "ic_search"),
-        //    destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_account", "Account", "ic_person"),
-        //    destForTopLevel(typeof(AndroidX.Fragment.App.Fragment), "navigation_settings", "Settings", "ic_settings"),
-        //};
-        //var dests = new NavDestination[] {
-        //    destFor(typeof(StoryDetailPage), "navigation_story", "Stories"),
-        //};
-
-        //detailFragId = dests[0].Id;
 
         var mainGraph = (NavGraph)new NavGraphBuilder(navController.NavigatorProvider, "navigation_home", "main_graph").Build();
 
         foreach (var subgraphConfig in appGraph)
         {
-            //topLevelDests.
             var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, subgraphConfig.StartDestId, subgraphConfig.SubgraphId);
             foreach (var entry in subgraphConfig.SubItems)
             {
@@ -154,67 +132,14 @@ public class MainActivity : AppCompatActivity, IFragmentFactoryListener
                 }
             }
             var subgraph = (NavGraph)graphBuilder.Build();
-            for (int i = 0; i < subgraph.Nodes.Size(); i++)
-            {
-                Console.WriteLine($"JIMMY NODE [{subgraph.Route}] [{subgraph.Nodes.KeyAt(i)}] [{subgraph.Nodes.ValueAt(i)}]");
-            }
             mainGraph.AddAll(subgraph);
-            //mainGraph.Add
-            //var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, subgraph.SubgraphId, null);
+            //mainGraph.
         }
-        Console.WriteLine("-------------------------");
-        for (int i = 0; i < mainGraph.Nodes.Size(); i++)
-        {
-            Console.WriteLine($"JIMMY NODE [{mainGraph.Route}] [{mainGraph.Nodes.KeyAt(i)}] [{mainGraph.Nodes.ValueAt(i)}]");
-        }
-
-        //var graphBuilder = new NavGraphBuilder(navController.NavigatorProvider, topLevelDests[0].Route!, null);
-        //foreach (var dest in topLevelDests)
-        //{
-        //    graphBuilder.AddDestination(dest);
-        //}
-        //foreach (var dest in dests)
-        //{
-        //    graphBuilder.AddDestination(dest);
-        //}
-        //var graph = (NavGraph)graphBuilder.Build();
 
         navController.SetGraph(mainGraph, null);
 
         var appBarConfiguration = new AppBarConfiguration.Builder(topLevelDests.ToArray()).Build();
-        //new AppBarConfiguration(topLevelDests, null, null, null);
         NavigationUI.SetupWithNavController(toolbar, navController, appBarConfiguration);
         NavigationUI.SetupWithNavController(navView, navController);
     }
-
-    public AndroidX.Fragment.App.Fragment? OnCreateFragment(string className)
-    {
-        if (className == Java.Lang.Class.FromType(typeof(StoriesPage)).Name)
-        {
-            var storiesFrag = new StoriesPage();
-            storiesFrag.OnItemSelected += OnStorySelected;
-            return storiesFrag;
-        }
-        else if (className == Java.Lang.Class.FromType(typeof(StoryDetailPage)).Name)
-        {
-            var storyFrag = new StoryDetailPage(AViewModel.SelectedItem!.Id);
-            return storyFrag;
-        }
-        return null;
-    }
-
-    private void OnStorySelected(object? sender, StoriesPage.EventArgs e)
-    {
-        Console.WriteLine($"Story Selected [{e.SelectedItem}]");
-        //AViewModel.SelectedItem = e.SelectedItem;
-
-        //var navCont = NavHostFragment.FindNavController(sender as AndroidX.Fragment.App.Fragment);
-        //var nav = new ActionOnlyNavDirections(detailFragId);
-        //navCont.Navigate(nav);
-    }
-}
-
-class AViewModel : AndroidX.Lifecycle.ViewModel
-{
-    public StoriesFeedItem? SelectedItem { get; set; }
 }
