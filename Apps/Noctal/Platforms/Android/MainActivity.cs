@@ -1,5 +1,4 @@
 ﻿using Android.App;
-using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Views;
@@ -64,6 +63,7 @@ public class MainActivity : AppCompatActivity
         var toolbar = FindViewById<AndroidX.AppCompat.Widget.Toolbar>(Resource.Id.toolbar)!;
         toolbar.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
         toolbar.SetTitleTextColor(theme.OnBackgroundColor.ToPlatform());
+        //SetSupportActionBar(toolbar);
 
         var navView = FindViewById<Google.Android.Material.BottomNavigation.BottomNavigationView>(Resource.Id.nav_view)!;
         navView.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
@@ -81,95 +81,100 @@ public class MainActivity : AppCompatActivity
         var subGraphs = new List<string>();
         var topLevelDests = new List<TopLevelEntry>();
 
-        var mainGraph = new NavGraphBuilder(navController.NavigatorProvider, "subnav_stories", "main_graph");
+        var mainGraph = new NavGraphBuilder(navController.NavigatorProvider, appGraph[0].StartDestId, "main_graph");
 
         foreach (var subgraphConfig in appGraph)
         {
-            var f = new GraphBuilder(this, subgraphConfig, navigator, topLevelDests);
-            NavGraphBuilderKt.Navigation(mainGraph, subgraphConfig.StartDestId, subgraphConfig.SubgraphId, f);
-            subGraphs.Add(subgraphConfig.SubgraphId);
+            foreach (var entry in subgraphConfig.SubItems)
+            {
+                if (entry is BasicNavEntry basic)
+                {
+                    var dest = DestFor(basic, navigator);
+                    if (basic is TopLevelEntry top)
+                    {
+                        AddMenuItem(navView.Menu, dest.Id, top.Label, top.IconResId);
+                    }
+                    mainGraph.AddDestination(dest);
+                }
+            }
         }
-        var b = (NavGraph)mainGraph.Build();
+        var navGraph = (NavGraph)mainGraph.Build();
 
-        navController.SetGraph(b, null);
-
-        foreach (var (t, s) in topLevelDests.Zip(subGraphs))
+        navController.DestinationChanged += (_, e) =>
         {
-            var drawable = ContextCompat.GetDrawable(this, t.IconResId);
-            var id = navController.FindDestination(s).Id;
-            var item = navView.Menu.Add(IMenu.None, id, IMenu.None, t.Label)!;
-            Console.WriteLine($"JIMMY menu item [s {s}] [id {id}] [tid {t.Id}]");
-            item.SetIcon(drawable);
-        }
+            int? checkedItem = null;
+            foreach (var subgraphConfig in appGraph)
+            {
+                if (subgraphConfig.SubItems.Any(it => it.Id == e.Destination.Route))
+                {
+                    checkedItem = navController.FindDestination(subgraphConfig.StartDestId).Id;
+                    break;
+                }
+            }
+            if (checkedItem is not null)
+            {
+                navView.Menu.FindItem((int)checkedItem)!.SetChecked(true);
+            }
+        };
+
+        navController.SetGraph(navGraph, null);
+
+        OnBackPressedDispatcher.AddCallback(this, new BackPressedCallback(() =>
+        {
+            var prevEntry = navController.PreviousBackStackEntry;
+            var curEntry = navController.CurrentBackStackEntry;
+            if (prevEntry == null)
+            {
+                // empty back stack on home tab
+                Finish();
+            }
+            else if (navView.SelectedItemId == curEntry?.Destination?.Id && navView.SelectedItemId != navController.Graph.StartDestinationId)
+            {
+                // on the root of the selected tab, but we arent on home
+                navView.SelectedItemId = navController.Graph.StartDestinationId;
+            }
+            else
+            {
+                // we are not at the root of a tab
+                navController.PopBackStack();
+            }
+        }));
 
         var appBarConfiguration = new AppBarConfiguration.Builder(navView.Menu).Build();
         NavigationUI.SetupWithNavController(toolbar, navController, appBarConfiguration);
         NavigationUI.SetupWithNavController(navView, navController);
     }
-}
 
-class GraphBuilder : Java.Lang.Object, Kotlin.Jvm.Functions.IFunction1
-{
-    private readonly SubgraphEntry Subgraph;
-    private readonly Android.Content.Context Context;
-    private readonly FragmentNavigator FragmentNavigator;
-    private readonly IList<TopLevelEntry> TopLevelDests;
-
-    public GraphBuilder(Android.Content.Context context, SubgraphEntry subgraph, FragmentNavigator fragmentNavigator, IList<TopLevelEntry> topLevelDests)
+    private class BackPressedCallback : AndroidX.Activity.OnBackPressedCallback
     {
-        Context = context;
-        Subgraph = subgraph;
-        FragmentNavigator = fragmentNavigator;
-        TopLevelDests = topLevelDests;
-    }
+        private readonly Action Callback;
 
-    public Java.Lang.Object? Invoke(Java.Lang.Object? p0)
-    {
-        var destForTopLevel = (TopLevelEntry e) =>
+        public BackPressedCallback(Action callback) : base(true)
         {
-            var resBuilder = new FragmentNavigatorDestinationBuilder(FragmentNavigator, e.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(e.PageType)))
-            {
-                Label = e.Label,
-            };
-
-            var res = (FragmentNavigator.Destination)resBuilder.Build();
-            return res;
-        };
-        var destFor = (BasicNavEntry e) =>
-        {
-            var resBuilder = new FragmentNavigatorDestinationBuilder(FragmentNavigator, e.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(e.PageType)))
-            {
-                Label = e.Label,
-            };
-
-            var res = (FragmentNavigator.Destination)resBuilder.Build();
-            return res;
-        };
-
-        var graphBuilder = (NavGraphBuilder)p0!;
-
-        foreach (var entry in Subgraph.SubItems)
-        {
-            switch (entry)
-            {
-                case TopLevelEntry topLevel:
-                    {
-                        var dest = destForTopLevel(topLevel);
-                        graphBuilder.AddDestination(dest);
-                        TopLevelDests.Add(topLevel);
-                        break;
-                    }
-                case BasicNavEntry basic:
-                    {
-                        var dest = destFor(basic);
-                        graphBuilder.AddDestination(dest);
-                        break;
-                    }
-                default:
-                    throw new ArgumentException($"unknown type: [{entry}]");
-            }
+            Callback = callback;
         }
 
-        return graphBuilder;
+        public override void HandleOnBackPressed()
+        {
+            Callback();
+        }
+    }
+
+    private FragmentNavigator.Destination DestFor(BasicNavEntry entry, FragmentNavigator navigator)
+    {
+        var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, entry.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(entry.PageType)))
+        {
+            Label = entry.Label,
+        };
+
+        var res = (FragmentNavigator.Destination)resBuilder.Build();
+        return res;
+    }
+
+    private void AddMenuItem(IMenu menu, int itemId, string label, int iconResId)
+    {
+        var item = menu.Add(IMenu.None, itemId, IMenu.None, label)!;
+        var drawable = ContextCompat.GetDrawable(this, iconResId);
+        item.SetIcon(drawable);
     }
 }
