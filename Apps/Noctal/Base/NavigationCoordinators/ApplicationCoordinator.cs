@@ -1,14 +1,28 @@
+using Android.Content.Res;
+using Android.Views;
+using AndroidX.Core.Content;
+using AndroidX.Navigation;
+using AndroidX.Navigation.Fragment;
+using AndroidX.Navigation.UI;
+using Google.Android.Material.BottomNavigation;
+using Noctal.UI.Theming;
+
 namespace Noctal;
 
 #if ANDROID
 public class ApplicationCoordinator : BaseCoordinator
 {
-    public ApplicationCoordinator(MainActivity activity)
+    public ApplicationCoordinator(MainActivity activity, FragmentFactory factory) : base(activity)
     {
-        ChildCoordinators.Add(new StoriesCoordinator(activity));
-        ChildCoordinators.Add(new SearchCoordinator());
-        ChildCoordinators.Add(new AccountCoordinator());
-        ChildCoordinators.Add(new SettingsCoordinator());
+        ChildCoordinators.Add(new StoriesCoordinator(activity, factory));
+        ChildCoordinators.Add(new SearchCoordinator(activity));
+        ChildCoordinators.Add(new AccountCoordinator(activity));
+        ChildCoordinators.Add(new SettingsCoordinator(activity));
+    }
+
+    public void SetContentView()
+    {
+        Activity.Target()?.SetContentView(Resource.Layout.activity_main);
     }
 
     public override SubgraphEntry GetSubgraph()
@@ -16,9 +30,138 @@ public class ApplicationCoordinator : BaseCoordinator
         throw new NotImplementedException();
     }
 
-    public IList<SubgraphEntry> GetGraph()
+    public override async Task Start()
     {
-        return ChildCoordinators.Select(it => it.GetSubgraph()).ToList();
+        await base.Start();
+
+        var activity = Activity.Target() ?? throw new ArgumentNullException(nameof(Activity));
+
+        var resources = activity.Resources!;
+        var isNight = resources.Configuration!.IsNightModeActive;
+        ITheme theme = isNight ? new DarkTheme() : new LightTheme();
+
+        var csl = new ColorStateList(new[]
+        {
+            new int[] {Android.Resource.Attribute.StateChecked },
+            Array.Empty<int>(),
+        },
+        new int[]
+        {
+            theme.PrimaryColor.ToPlatform(),
+            theme.OnBackgroundColor.ToPlatform(),
+        });
+
+        var toolbar = activity.FindViewById<AndroidX.AppCompat.Widget.Toolbar>(Resource.Id.toolbar)!;
+        toolbar.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
+        toolbar.SetTitleTextColor(theme.OnBackgroundColor.ToPlatform());
+
+        var navView = activity.FindViewById<Google.Android.Material.BottomNavigation.BottomNavigationView>(Resource.Id.nav_view)!;
+        navView.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
+        navView.ItemTextColor = csl;
+        navView.LabelVisibilityMode = LabelVisibilityMode.LabelVisibilityLabeled;
+        navView.ItemIconTintList = csl;
+        var container = activity.FindViewById<AndroidX.Fragment.App.FragmentContainerView>(Resource.Id.nav_host_fragment_activity_main)!;
+        container.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
+        Nav = ((NavHostFragment)activity.SupportFragmentManager.FindFragmentById(Resource.Id.nav_host_fragment_activity_main)!).NavController;
+        var navigator = (FragmentNavigator)Nav.NavigatorProvider.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
+
+        var appGraph = ChildCoordinators.Select(it => it.GetSubgraph()).ToList();
+        var mainGraph = new NavGraphBuilder(Nav.NavigatorProvider, appGraph[0].StartDestId, "main_graph");
+
+        foreach (var subgraphConfig in appGraph)
+        {
+            foreach (var entry in subgraphConfig.SubItems)
+            {
+                if (entry is BasicNavEntry basic)
+                {
+                    var dest = DestFor(basic, navigator);
+                    if (basic is TopLevelEntry top)
+                    {
+                        AddMenuItem(activity, navView.Menu, dest.Id, top.Label, top.IconResId);
+                    }
+                    mainGraph.AddDestination(dest);
+                }
+            }
+        }
+        var navGraph = (NavGraph)mainGraph.Build();
+
+        Nav.DestinationChanged += (_, e) =>
+        {
+            int? checkedItem = null;
+            foreach (var subgraphConfig in appGraph)
+            {
+                if (subgraphConfig.SubItems.Any(it => it.Id == e.Destination.Route))
+                {
+                    checkedItem = Nav.FindDestination(subgraphConfig.StartDestId).Id;
+                    break;
+                }
+            }
+            if (checkedItem is not null)
+            {
+                navView.Menu.FindItem((int)checkedItem)!.SetChecked(true);
+            }
+        };
+
+        Nav.SetGraph(navGraph, null);
+
+        activity.OnBackPressedDispatcher.AddCallback(activity, new BackPressedCallback(() =>
+        {
+            var prevEntry = Nav.PreviousBackStackEntry;
+            var curEntry = Nav.CurrentBackStackEntry;
+            if (prevEntry == null)
+            {
+                // empty back stack on home tab
+                Activity.Target()?.Finish();
+            }
+            else if (navView.SelectedItemId == curEntry?.Destination?.Id && navView.SelectedItemId != Nav.Graph.StartDestinationId)
+            {
+                // on the root of the selected tab, but we arent on home
+                navView.SelectedItemId = Nav.Graph.StartDestinationId;
+            }
+            else
+            {
+                // we are not at the root of a tab
+                Nav.PopBackStack();
+            }
+        }));
+
+        var appBarConfiguration = new AppBarConfiguration.Builder(navView.Menu).Build();
+        NavigationUI.SetupWithNavController(toolbar, Nav, appBarConfiguration);
+        NavigationUI.SetupWithNavController(navView, Nav);
+    }
+
+
+    private class BackPressedCallback : AndroidX.Activity.OnBackPressedCallback
+    {
+        private readonly Action Callback;
+
+        public BackPressedCallback(Action callback) : base(true)
+        {
+            Callback = callback;
+        }
+
+        public override void HandleOnBackPressed()
+        {
+            Callback();
+        }
+    }
+
+    private FragmentNavigator.Destination DestFor(BasicNavEntry entry, FragmentNavigator navigator)
+    {
+        var resBuilder = new FragmentNavigatorDestinationBuilder(navigator, entry.Id, Kotlin.Jvm.JvmClassMappingKt.GetKotlinClass(Java.Lang.Class.FromType(entry.PageType)))
+        {
+            Label = entry.Label,
+        };
+
+        var res = (FragmentNavigator.Destination)resBuilder.Build();
+        return res;
+    }
+
+    private void AddMenuItem(Android.Content.Context context, IMenu menu, int itemId, string label, int iconResId)
+    {
+        var item = menu.Add(IMenu.None, itemId, IMenu.None, label)!;
+        var drawable = ContextCompat.GetDrawable(context, iconResId);
+        item.SetIcon(drawable);
     }
 }
 #elif IOS

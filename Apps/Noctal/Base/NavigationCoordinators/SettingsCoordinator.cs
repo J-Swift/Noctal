@@ -5,6 +5,8 @@ namespace Noctal;
 #if ANDROID
 public class SettingsCoordinator : BaseCoordinator
 {
+    public SettingsCoordinator(MainActivity activity) : base(activity) { }
+
     public override SubgraphEntry GetSubgraph()
     {
         return new SubgraphEntry("subnav_settings", "navigation_settings", new[]

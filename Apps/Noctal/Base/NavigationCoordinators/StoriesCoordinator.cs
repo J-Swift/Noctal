@@ -15,12 +15,9 @@ namespace Noctal;
 // https://damienaicheh.github.io/xamarin/xamarin.android/2018/05/26/xamarin-android-parcelable-en.html
 public class StoriesCoordinator : BaseCoordinator, IFragmentFactoryAfterCreateListener
 {
-    private readonly MainActivity Activity;
-
-    public StoriesCoordinator(MainActivity activity)
+    public StoriesCoordinator(MainActivity activity, FragmentFactory factory) : base(activity)
     {
-        Activity = activity;
-        activity.Factory.RegisterAfterCreateListener(typeof(StoriesPage), this);
+        factory.RegisterAfterCreateListener(typeof(StoriesPage), this);
     }
 
     public override SubgraphEntry GetSubgraph()
@@ -50,9 +47,8 @@ public class StoriesCoordinator : BaseCoordinator, IFragmentFactoryAfterCreateLi
 
     private void ShowStoriesDetailPage(int storyId)
     {
-        var nav = Activity.Nav;
-        var action = StoryDetailPage.SafeNav(nav, storyId);
-        nav.Navigate(action.DestId, action.DestArgs);
+        var action = StoryDetailPage.SafeNav(Nav, storyId);
+        Nav.Navigate(action.DestId, action.DestArgs);
     }
 }
 

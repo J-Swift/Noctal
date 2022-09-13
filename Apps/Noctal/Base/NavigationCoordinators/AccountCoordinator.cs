@@ -3,6 +3,8 @@ namespace Noctal;
 #if ANDROID
 public class AccountCoordinator : BaseCoordinator
 {
+    public AccountCoordinator(MainActivity activity) : base(activity) { }
+
     public override SubgraphEntry GetSubgraph()
     {
         return new SubgraphEntry("subnav_account", "navigation_account", new[]

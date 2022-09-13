@@ -3,6 +3,8 @@ namespace Noctal;
 #if ANDROID
 public class SearchCoordinator : BaseCoordinator
 {
+    public SearchCoordinator(MainActivity activity) : base(activity) { }
+
     public override SubgraphEntry GetSubgraph()
     {
         return new SubgraphEntry("subnav_search", "navigation_search", new[]

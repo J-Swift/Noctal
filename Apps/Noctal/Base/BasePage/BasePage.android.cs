@@ -19,9 +19,21 @@ public abstract partial class BasePage<TViewModel> : ReactiveUI.AndroidX.Reactiv
         this.WhenActivated(disposables => BindView(disposables));
     }
 
+    public override void OnCreate(Bundle? savedInstanceState)
+    {
+        base.OnCreate(savedInstanceState);
+
+        if (Arguments is Bundle args)
+        {
+            ReadArgs(args);
+        }
+    }
+
     public override View? OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
     {
         ViewModel = CreateViewModel();
         return CreateView(RequireContext());
     }
+
+    protected virtual void ReadArgs(Bundle args) { }
 }

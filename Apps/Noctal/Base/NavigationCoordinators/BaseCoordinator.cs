@@ -18,12 +18,29 @@ public record TopLevelEntry(string Id, Type PageType, string Label, int IconResI
 
 public abstract partial class BaseCoordinator
 {
+    protected readonly WeakReference<MainActivity> Activity;
+    protected static AndroidX.Navigation.NavController Nav { get; set; } = null!;
+
     //public abstract IList<NavItem> GetNavEntries();
     public abstract SubgraphEntry GetSubgraph();
 
-    public BaseCoordinator()
+    public BaseCoordinator(MainActivity activity)
     {
-
+        Activity = new(activity);
     }
 }
 #endif
+
+public static class WeakRefExtensions
+{
+    public static TItem? Target<TItem>(this WeakReference<TItem> weakRef) where TItem : class
+    {
+        if (weakRef.TryGetTarget(out var target))
+        {
+            return target;
+        }
+
+        return null;
+    }
+}
+

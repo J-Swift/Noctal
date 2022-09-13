@@ -20,20 +20,6 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private int StoryId { get; set; }
     protected override StoryDetailViewModel CreateViewModel() => new(StoryId, new StoriesService());
 
-#if ANDROID
-    private const string BUNDLE_STORY_ID = "story_id";
-    public override View? OnCreateView(LayoutInflater inflater, ViewGroup? container, Bundle? savedInstanceState)
-    {
-        StoryId = Arguments!.GetInt(BUNDLE_STORY_ID);
-        return base.OnCreateView(inflater, container, savedInstanceState);
-    }
-#elif IOS
-    public StoryDetailPage(int storyId) : base()
-    {
-        StoryId = storyId;
-    }
-#endif
-
     public static class Dims
     {
         public static readonly double DimImgFavicon = 16;
@@ -49,12 +35,13 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 {
     public const string NAVIGATION_ROUTE = "navigation_story";
+    private const string ARGS_STORY_ID = "story_id";
 
     public static (int DestId, Bundle DestArgs) SafeNav(AndroidX.Navigation.NavController nav, int storyId)
     {
         var destId = nav.FindDestination(NAVIGATION_ROUTE).Id;
         var bundle = new Bundle();
-        bundle.PutInt(BUNDLE_STORY_ID, storyId);
+        bundle.PutInt(ARGS_STORY_ID, storyId);
         return (destId, bundle);
     }
 
@@ -63,6 +50,11 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private NoctalLabel LblScore { get; set; } = null!;
     private NoctalLabel LblAuthor { get; set; } = null!;
     private NoctalLabel LblTimeAgo { get; set; } = null!;
+
+    protected override void ReadArgs(Bundle args)
+    {
+        StoryId = args.GetInt(ARGS_STORY_ID);
+    }
 
     protected override void BindView(CompositeDisposable disposables)
     {
@@ -222,6 +214,11 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private NoctalLabel LblScore { get; set; } = null!;
     private NoctalLabel LblAuthor { get; set; } = null!;
     private NoctalLabel LblTimeAgo { get; set; } = null!;
+
+    public StoryDetailPage(int storyId) : base()
+    {
+        StoryId = storyId;
+    }
 
     protected override void BindView(CompositeDisposable disposables)
     {
