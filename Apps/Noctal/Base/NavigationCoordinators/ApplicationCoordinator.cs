@@ -1,3 +1,4 @@
+#if ANDROID
 using Android.Content.Res;
 using Android.Views;
 using AndroidX.Core.Content;
@@ -5,6 +6,7 @@ using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Google.Android.Material.BottomNavigation;
+#endif
 
 namespace Noctal;
 

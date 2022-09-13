@@ -15,14 +15,12 @@ public abstract class BasePage<TViewModel> : ReactiveUI.ReactiveViewController<T
     {
         this.WhenActivated(disposables =>
         {
-            Console.WriteLine("JIMMY WhenActivated");
             BindView(disposables);
         });
     }
 
     public override void LoadView()
     {
-        Console.WriteLine("JIMMY LoadView");
         ViewModel = CreateViewModel();
         View = CreateView();
         View.BackgroundColor = SceneDelegate.Theme.BackgroundColor;

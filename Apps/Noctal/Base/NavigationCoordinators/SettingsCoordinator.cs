@@ -1,4 +1,4 @@
-using Noctal.Stories;
+using Noctal.Settings;
 
 namespace Noctal;
 
@@ -11,7 +11,7 @@ public class SettingsCoordinator : BaseCoordinator
     {
         return new SubgraphEntry("subnav_settings", "navigation_settings", new[]
         {
-            new TopLevelEntry("navigation_settings", typeof(AndroidX.Fragment.App.Fragment),"Settings", Resource.Drawable.ic_settings),
+            new TopLevelEntry("navigation_settings", typeof(SettingsPage),"Settings", Resource.Drawable.ic_settings),
         });
     }
 }
@@ -25,13 +25,8 @@ public class SettingsCoordinator : BaseCoordinator
     {
         await base.Start();
 
-        var vc = new UIViewController { Title = "Settings", };
-        vc.View = new NoctalLabel
-        {
-            Text = "Settings Page",
-            TextAlignment = UITextAlignment.Center,
-        };
-        NavController.SetViewControllers(new[] { vc }, false);
+        var page = new SettingsPage { Title = "Settings", };
+        NavController.SetViewControllers(new[] { page }, false);
     }
 }
 #endif

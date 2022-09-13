@@ -1,3 +1,5 @@
+using Noctal.Search;
+
 namespace Noctal;
 
 #if ANDROID
@@ -9,7 +11,7 @@ public class SearchCoordinator : BaseCoordinator
     {
         return new SubgraphEntry("subnav_search", "navigation_search", new[]
         {
-            new TopLevelEntry("navigation_search", typeof(AndroidX.Fragment.App.Fragment), "Search", Resource.Drawable.ic_search),
+            new TopLevelEntry("navigation_search", typeof(SearchPage), "Search", Resource.Drawable.ic_search),
         });
     }
 }
@@ -23,13 +25,8 @@ public class SearchCoordinator : BaseCoordinator
     {
         await base.Start();
 
-        var vc = new UIViewController { Title = "Search", };
-        vc.View = new NoctalLabel
-        {
-            Text = "Search Page",
-            TextAlignment = UITextAlignment.Center,
-        };
-        NavController.SetViewControllers(new[] { vc }, false);
+        var page = new SearchPage { Title = "Search", };
+        NavController.SetViewControllers(new[] { page }, false);
     }
 }
 #endif

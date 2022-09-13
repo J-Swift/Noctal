@@ -1,3 +1,5 @@
+using Noctal.Account;
+
 namespace Noctal;
 
 #if ANDROID
@@ -9,7 +11,7 @@ public class AccountCoordinator : BaseCoordinator
     {
         return new SubgraphEntry("subnav_account", "navigation_account", new[]
         {
-            new TopLevelEntry("navigation_account", typeof(AndroidX.Fragment.App.Fragment), "Account", Resource.Drawable.ic_person),
+            new TopLevelEntry("navigation_account", typeof(AccountPage), "Account", Resource.Drawable.ic_person),
         });
     }
 }
@@ -23,13 +25,8 @@ public class AccountCoordinator : BaseCoordinator
     {
         await base.Start();
 
-        var vc = new UIViewController { Title = "Account", };
-        vc.View = new NoctalLabel
-        {
-            Text = "Account Page",
-            TextAlignment = UITextAlignment.Center,
-        };
-        NavController.SetViewControllers(new[] { vc }, false);
+        var page = new AccountPage { Title = "Account", };
+        NavController.SetViewControllers(new[] { page }, false);
     }
 }
 #endif
