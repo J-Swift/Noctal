@@ -5,7 +5,6 @@ using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Google.Android.Material.BottomNavigation;
-using Noctal.UI.Theming;
 
 namespace Noctal;
 
@@ -22,27 +21,15 @@ public class ApplicationCoordinator : BaseCoordinator
 
     public void SetContentView()
     {
-        Activity.Target()?.SetContentView(Resource.Layout.activity_main);
-    }
+        var activity = Activity.Target()!;
 
-    public override SubgraphEntry GetSubgraph()
-    {
-        throw new NotImplementedException();
-    }
+        activity.SetContentView(Resource.Layout.activity_main);
 
-    public override async Task Start()
-    {
-        await base.Start();
-
-        var activity = Activity.Target() ?? throw new ArgumentNullException(nameof(Activity));
-
-        var resources = activity.Resources!;
-        var isNight = resources.Configuration!.IsNightModeActive;
-        ITheme theme = isNight ? new DarkTheme() : new LightTheme();
+        var theme = activity.CurrentTheme;
 
         var csl = new ColorStateList(new[]
         {
-            new int[] {Android.Resource.Attribute.StateChecked },
+            new int[] { Android.Resource.Attribute.StateChecked },
             Array.Empty<int>(),
         },
         new int[]
@@ -58,10 +45,27 @@ public class ApplicationCoordinator : BaseCoordinator
         var navView = activity.FindViewById<Google.Android.Material.BottomNavigation.BottomNavigationView>(Resource.Id.nav_view)!;
         navView.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
         navView.ItemTextColor = csl;
-        navView.LabelVisibilityMode = LabelVisibilityMode.LabelVisibilityLabeled;
         navView.ItemIconTintList = csl;
+        navView.LabelVisibilityMode = LabelVisibilityMode.LabelVisibilityLabeled;
+
         var container = activity.FindViewById<AndroidX.Fragment.App.FragmentContainerView>(Resource.Id.nav_host_fragment_activity_main)!;
         container.SetBackgroundColor(theme.BackgroundColor.ToPlatform());
+    }
+
+    public override SubgraphEntry GetSubgraph()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override async Task Start()
+    {
+        await base.Start();
+
+        var activity = Activity.Target() ?? throw new ArgumentNullException(nameof(Activity));
+
+        var toolbar = activity.FindViewById<AndroidX.AppCompat.Widget.Toolbar>(Resource.Id.toolbar)!;
+        var navView = activity.FindViewById<Google.Android.Material.BottomNavigation.BottomNavigationView>(Resource.Id.nav_view)!;
+
         Nav = ((NavHostFragment)activity.SupportFragmentManager.FindFragmentById(Resource.Id.nav_host_fragment_activity_main)!).NavController;
         var navigator = (FragmentNavigator)Nav.NavigatorProvider.GetNavigator(Java.Lang.Class.FromType(typeof(FragmentNavigator)));
 
@@ -128,8 +132,9 @@ public class ApplicationCoordinator : BaseCoordinator
         var appBarConfiguration = new AppBarConfiguration.Builder(navView.Menu).Build();
         NavigationUI.SetupWithNavController(toolbar, Nav, appBarConfiguration);
         NavigationUI.SetupWithNavController(navView, Nav);
-    }
 
+        await Task.WhenAll(ChildCoordinators.Select(it => it.Start()));
+    }
 
     private class BackPressedCallback : AndroidX.Activity.OnBackPressedCallback
     {

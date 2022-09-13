@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.OS;
 using AndroidX.AppCompat.App;
+using Noctal.UI.Theming;
 
 namespace Noctal;
 
@@ -9,16 +10,18 @@ public class MainActivity : AppCompatActivity
 {
     static bool isNight = false;
 
+    public ITheme CurrentTheme { get; private set; } = null!;
     private ApplicationCoordinator Coordinator = null!;
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        isNight = !isNight;
+        CurrentTheme = isNight ? new DarkTheme() : new LightTheme();
+        AppCompatDelegate.DefaultNightMode = isNight ? AppCompatDelegate.ModeNightYes : AppCompatDelegate.ModeNightNo;
+
         var factory = new FragmentFactory();
         SupportFragmentManager.FragmentFactory = factory;
         Coordinator = new ApplicationCoordinator(this, factory);
-
-        isNight = !isNight;
-        AppCompatDelegate.DefaultNightMode = isNight ? AppCompatDelegate.ModeNightYes : AppCompatDelegate.ModeNightNo;
 
         if (Theme.TryResolveAttribute(Resource.Attribute.maui_splash))
         {
