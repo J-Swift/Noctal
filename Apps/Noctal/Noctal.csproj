@@ -62,6 +62,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Libs\Module.HN.Api\Module.HN.Api.csproj" />
     <ProjectReference Include="..\..\Libs\Noctal.UI\Noctal.UI.csproj" />
     <Using Alias="NoctalLabel" Include="Noctal.UI.Controls.Label" />
   </ItemGroup>

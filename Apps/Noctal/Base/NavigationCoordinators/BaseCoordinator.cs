@@ -11,7 +11,7 @@ public abstract partial class BaseCoordinator
 }
 
 #if ANDROID
-public record SubgraphEntry(string SubgraphId, string StartDestId, IList<NavItem> SubItems);
+public record SubgraphEntry(string SubgraphId, string StartDestId, NavItem[] SubItems);
 public abstract record NavItem(string Id);
 public record BasicNavEntry(string Id, Type PageType, string Label) : NavItem(Id);
 public record TopLevelEntry(string Id, Type PageType, string Label, int IconResId) : BasicNavEntry(Id, PageType, Label);

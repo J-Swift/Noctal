@@ -1,13 +1,15 @@
+using HN.Api;
 using ReactiveUI;
 using System.Reactive.Disposables;
-
 #if ANDROID
 using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
+using AndroidX.Navigation;
 using Google.Android.Material.Shape;
+
 #elif IOS
 using CoreFoundation;
 using System.Runtime.InteropServices;
@@ -18,7 +20,11 @@ namespace Noctal.Stories;
 public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 {
     private int StoryId { get; set; }
-    protected override StoryDetailViewModel CreateViewModel() => new(StoryId, new StoriesService());
+
+    protected override StoryDetailViewModel CreateViewModel()
+    {
+        return new StoryDetailViewModel(StoryId, new StoriesService(new HNApiMock()));
+    }
 
     public static class Dims
     {
@@ -37,19 +43,19 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     public const string NAVIGATION_ROUTE = "navigation_story";
     private const string ARGS_STORY_ID = "story_id";
 
-    public static (int DestId, Bundle DestArgs) SafeNav(AndroidX.Navigation.NavController nav, int storyId)
+    private NoctalLabel LblTitle { get; set; } = null!;
+    private NoctalLabel LblUrl { get; set; } = null!;
+    private NoctalLabel LblScore { get; set; } = null!;
+    private NoctalLabel LblAuthor { get; set; } = null!;
+    private NoctalLabel LblTimeAgo { get; set; } = null!;
+
+    public static (int DestId, Bundle DestArgs) SafeNav(NavController nav, int storyId)
     {
         var destId = nav.FindDestination(NAVIGATION_ROUTE).Id;
         var bundle = new Bundle();
         bundle.PutInt(ARGS_STORY_ID, storyId);
         return (destId, bundle);
     }
-
-    private NoctalLabel LblTitle { get; set; } = null!;
-    private NoctalLabel LblUrl { get; set; } = null!;
-    private NoctalLabel LblScore { get; set; } = null!;
-    private NoctalLabel LblAuthor { get; set; } = null!;
-    private NoctalLabel LblTimeAgo { get; set; } = null!;
 
     protected override void ReadArgs(Bundle args)
     {
@@ -79,11 +85,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         var _dimHPadding = context.ToPixels(Dims.DimHPadding);
 
         var makeLabel = () => new NoctalLabel(context);
-        var makeRow = () => new LinearLayout(context)
-        {
-            Orientation = Orientation.Horizontal,
-            LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent),
-        };
+        var makeRow = () => new LinearLayout(context) { Orientation = Orientation.Horizontal, LayoutParameters = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent) };
         var addSpacer = (LinearLayout layout, float space) =>
         {
             var view = new View(context);
@@ -96,16 +98,14 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             {
                 ps.Height = (int)space;
             }
+
             layout.AddView(view, ps);
         };
 
         var scroll = new ScrollView(context);
 
-        var sv = new LinearLayout(context)
-        {
-            Orientation = Orientation.Vertical,
-        };
-        sv.SetPaddingRelative(start: (int)_dimHPadding, end: (int)_dimHPadding, top: 0, bottom: 0);
+        var sv = new LinearLayout(context) { Orientation = Orientation.Vertical };
+        sv.SetPaddingRelative((int)_dimHPadding, end: (int)_dimHPadding, top: 0, bottom: 0);
         scroll.AddView(sv, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
 
         LblTitle = makeLabel();
@@ -116,15 +116,12 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         var row = makeRow();
 
         var shapeModel = new ShapeAppearanceModel().ToBuilder()
-                .SetAllCornerSizes(new RelativeCornerSize(0.5f))
-                .Build();
+            .SetAllCornerSizes(new RelativeCornerSize(0.5f))
+            .Build();
         var shape = new MaterialShapeDrawable(shapeModel);
         shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
-        var imgFavicon = new View(context)
-        {
-            Background = shape,
-        };
+        var imgFavicon = new View(context) { Background = shape };
 
         row.AddView(imgFavicon, new ViewGroup.LayoutParams((int)_dimImgFavicon, (int)_dimImgFavicon));
 
@@ -140,17 +137,11 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         // Image Row
 
         shapeModel = new ShapeAppearanceModel().ToBuilder()
-           .SetAllCorners(CornerFamily.Rounded, _dimImgRadius)
-           .Build();
-        shape = new MaterialShapeDrawable(shapeModel)
-        {
-            FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList(),
-        };
+            .SetAllCorners(CornerFamily.Rounded, _dimImgRadius)
+            .Build();
+        shape = new MaterialShapeDrawable(shapeModel) { FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList() };
 
-        var img = new View(context)
-        {
-            Background = shape,
-        };
+        var img = new View(context) { Background = shape };
 
         addSpacer(sv, _dimVPadding);
 
@@ -162,7 +153,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             StartToStart = parentId,
             EndToEnd = parentId,
             TopToTop = parentId,
-            BottomToBottom = parentId,
+            BottomToBottom = parentId
         };
         imgWrapper.AddView(img, ps);
 

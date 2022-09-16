@@ -10,7 +10,7 @@ using static Noctal.FragmentFactory;
 #endif
 
 namespace Noctal;
-    
+
 #if ANDROID
 // https://damienaicheh.github.io/xamarin/xamarin.android/2018/05/26/xamarin-android-parcelable-en.html
 public class StoriesCoordinator : BaseCoordinator, IFragmentFactoryAfterCreateListener
