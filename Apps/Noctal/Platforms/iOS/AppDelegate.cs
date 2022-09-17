@@ -13,7 +13,6 @@ namespace Noctal;
 //    {
 //        Window = new UIWindow(UIScreen.MainScreen.Bounds);
 
-
 //        var vc = new UIViewController();
 //        vc.View!.BackgroundColor = UIColor.Red;
 //        var navController = new UINavigationController(vc);
@@ -23,10 +22,8 @@ namespace Noctal;
 
 //        Window.MakeKeyAndVisible();
 
-
 //        return true;
 //    }
-
 
 //}
 
@@ -35,11 +32,7 @@ public class AppDelegate : UIApplicationDelegate
 {
     public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
     {
+        StartupExtensions.RegisterServices();
         return true;
-    }
-
-    public override UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options)
-    {
-        return new UISceneConfiguration("Default Configuration", connectingSceneSession.Role);
     }
 }

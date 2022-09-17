@@ -17,10 +17,7 @@ public class SceneDelegate : UIWindowSceneDelegate
             Theme = new AdaptiveTheme(new LightTheme(), new DarkTheme(), false);
             ApplyTheme();
 
-            Window = new UIWindow(windowScene)
-            {
-                BackgroundColor = Theme.BackgroundColor,
-            };
+            Window = new UIWindow(windowScene) { BackgroundColor = Theme.BackgroundColor };
             var appCoordinator = new ApplicationCoordinator();
 
             Window.RootViewController = appCoordinator.RootView;

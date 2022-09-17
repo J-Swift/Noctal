@@ -1,4 +1,3 @@
-using HN.Api;
 using ReactiveUI;
 using System.Reactive.Disposables;
 #if ANDROID
@@ -23,7 +22,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
     protected override StoryDetailViewModel CreateViewModel()
     {
-        return new StoryDetailViewModel(StoryId, new StoriesService(new HNApiMock()));
+        return new StoryDetailViewModel(StoryId, ServiceProvider.GetService<StoriesService>());
     }
 
     public static class Dims

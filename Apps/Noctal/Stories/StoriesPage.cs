@@ -1,5 +1,4 @@
 using DynamicData.Binding;
-using HN.Api;
 using Noctal.Stories.Models;
 using ReactiveUI;
 using System.Reactive.Disposables;
@@ -27,7 +26,7 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
 
     protected override StoriesViewModel CreateViewModel()
     {
-        return new StoriesViewModel(new StoriesService(new HNApi()));
+        return new StoriesViewModel(ServiceProvider.GetService<StoriesService>());
     }
 
     public record EventArgs(StoriesFeedItem SelectedItem);
