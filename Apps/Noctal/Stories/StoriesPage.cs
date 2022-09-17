@@ -1,3 +1,9 @@
+using DynamicData.Binding;
+using HN.Api;
+using Noctal.Stories.Models;
+using ReactiveUI;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 #if ANDROID
 using Android.Content;
 using Android.Views;
@@ -5,18 +11,13 @@ using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.Shape;
+
 #elif IOS
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
 using System.Runtime.InteropServices;
 #endif
-using DynamicData.Binding;
-using HN.Api;
-using Noctal.Stories.Models;
-using ReactiveUI;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 
 namespace Noctal.Stories;
 
@@ -58,7 +59,7 @@ public partial class StoriesPage
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {
-                ItemAdapter.SetItems(SafeViewModel.Items);
+                ItemAdapter.SetItems(new List<StoriesFeedItem>(SafeViewModel.Items));
             })
             .DisposeWith(disposables);
     }
@@ -66,7 +67,7 @@ public partial class StoriesPage
     protected override View CreateView(Context ctx)
     {
         var layoutManager = new LinearLayoutManager(ctx, LinearLayoutManager.Vertical, false);
-        ItemAdapter = new MyAdapter(SafeViewModel.Items);
+        ItemAdapter = new MyAdapter(new List<StoriesFeedItem>(SafeViewModel.Items));
         var decor = new DividerItemDecoration(ctx, DividerItemDecoration.Vertical);
 
         Feed = new RecyclerView(ctx);
