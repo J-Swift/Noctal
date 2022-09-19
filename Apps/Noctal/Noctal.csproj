@@ -17,6 +17,7 @@
   <PropertyGroup>
     <EnableDefaultMauiItems>true</EnableDefaultMauiItems>
     <UseMauiCore>true</UseMauiCore>
+    <UseMauiEssentials>true</UseMauiEssentials>
     <UseMauiAssets>true</UseMauiAssets>
 
     <iOSProjectFolder>Platforms\iOS\</iOSProjectFolder>
@@ -31,9 +32,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <MauiImage Include="Resources\Images\*" />
-    <MauiFont Include="Resources\Fonts\*" />
-    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiImage Include="Resources\Images\*"/>
+    <MauiFont Include="Resources\Fonts\*"/>
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)"/>
 
     <MauiIcon Include="Resources\AppIcon\appicon.svg">
       <ForegroundFile>Resources\AppIcon\appiconfg.svg</ForegroundFile>
@@ -46,37 +47,38 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) != true AND $(TargetFramework.StartsWith('net6.0-ios')) != true AND $(TargetFramework.StartsWith('net6.0-maccatalyst')) != true ">
-    <Compile Remove="**\*.ios.cs" />
-    <None Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <Compile Remove="**\iOS\**\*.cs" />
-    <None Include="**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\*.ios.cs"/>
+    <None Include="**\*.ios.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
+    <Compile Remove="**\iOS\**\*.cs"/>
+    <None Include="**\iOS\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) != true AND $(TargetFramework.StartsWith('net6.0-android')) != true ">
-    <Compile Remove="**\*.android.cs" />
-    <None Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-    <Compile Remove="**\Android\**\*.cs" />
-    <None Include="**\Android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+    <Compile Remove="**\*.android.cs"/>
+    <None Include="**\*.android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
+    <Compile Remove="**\Android\**\*.cs"/>
+    <None Include="**\Android\**\*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)"/>
   </ItemGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Libs\Module.HN.Api\Module.HN.Api.csproj" />
-    <ProjectReference Include="..\..\Libs\Noctal.UI\Noctal.UI.csproj" />
-    <Using Alias="NoctalLabel" Include="Noctal.UI.Controls.Label" />
+    <ProjectReference Include="..\..\Libs\Module.HN.Api\Module.HN.Api.csproj"/>
+    <ProjectReference Include="..\..\Libs\Module.MetaFetcher\Module.MetaFetcher.csproj"/>
+    <ProjectReference Include="..\..\Libs\Noctal.UI\Noctal.UI.csproj"/>
+    <Using Alias="NoctalLabel" Include="Noctal.UI.Controls.Label"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ReactiveUI" Version="18.3.1" />
-    <PackageReference Include="ReactiveUI.AndroidX" Version="18.3.1" Condition="'$(TargetFramework)' == 'net6.0-android'" />
-    <PackageReference Include="DynamicData" Version="7.9.7" />
+    <PackageReference Include="ReactiveUI" Version="18.3.1"/>
+    <PackageReference Include="ReactiveUI.AndroidX" Version="18.3.1" Condition="'$(TargetFramework)' == 'net6.0-android'"/>
+    <PackageReference Include="DynamicData" Version="7.9.7"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android'">
-    <PackageVersion Include="Xamarin.AndroidX.Core" Version="1.8.0.1" />
-    <PackageVersion Include="Xamarin.AndroidX.ConstraintLayout" Version="2.1.4.1" />
-    <PackageVersion Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.5.0" />
-    <PackageVersion Include="Xamarin.AndroidX.Navigation.UI" Version="2.5.0" />
+    <PackageVersion Include="Xamarin.AndroidX.Core" Version="1.8.0.1"/>
+    <PackageVersion Include="Xamarin.AndroidX.ConstraintLayout" Version="2.1.4.1"/>
+    <PackageVersion Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.5.0"/>
+    <PackageVersion Include="Xamarin.AndroidX.Navigation.UI" Version="2.5.0"/>
   </ItemGroup>
 </Project>

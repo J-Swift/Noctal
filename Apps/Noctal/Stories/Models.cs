@@ -1,5 +1,5 @@
 namespace Noctal.Stories.Models;
 
-public record StoriesFeedItem(int Id, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments)
+public record StoriesFeedItem(int Id, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments, string? FavIconPath = null, string? ImagePath = null)
 {
-};
+}
