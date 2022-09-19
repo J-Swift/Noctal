@@ -14,7 +14,7 @@ public class HNApi : IHNApi
 
     public async Task<IReadOnlyCollection<Story>> GetStoriesAsync()
     {
-        var resp = await _httpClient.GetAsync("api/v1/search?tags=story");
+        var resp = await _httpClient.GetAsync("api/v1/search?tags=story,front_page");
         resp.EnsureSuccessStatusCode();
         var dto = await resp.Content.ReadFromJsonAsync<HnSearchDto>();
         return (dto?.hits ?? new List<StoryDto>()).Select(StoryFrom).ToList();

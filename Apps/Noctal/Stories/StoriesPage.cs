@@ -1,8 +1,3 @@
-using DynamicData.Binding;
-using Noctal.Stories.Models;
-using ReactiveUI;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 #if ANDROID
 using Android.Content;
 using Android.Views;
@@ -10,13 +5,18 @@ using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.Shape;
-
 #elif IOS
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
 using System.Runtime.InteropServices;
 #endif
+using DynamicData.Binding;
+using Noctal.Stories.Models;
+using ReactiveUI;
+using System.Collections.Specialized;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 
 namespace Noctal.Stories;
 

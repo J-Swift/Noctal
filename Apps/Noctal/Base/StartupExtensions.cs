@@ -11,8 +11,8 @@ public static class StartupExtensions
         var registry = new ServiceProvider();
 
         var hnApi = new HNApiMock();
-        var storiesSvc = new StoriesService(hnApi);
         var fetcher = new MetaFetcher.MetaFetcher();
+        var storiesSvc = new StoriesService(hnApi, fetcher);
 
         registry.RegisterService<IHNApi>(hnApi);
         registry.RegisterService<IMetaFetcher>(fetcher);
