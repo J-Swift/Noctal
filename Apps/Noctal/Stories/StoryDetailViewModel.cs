@@ -4,8 +4,6 @@ namespace Noctal.Stories;
 
 public class StoryDetailViewModel : BaseViewModel
 {
-    public StoriesFeedItem? Item { get; private set; }
-
     private readonly int ItemId;
 
     public StoryDetailViewModel(int itemId, StoriesService storiesService)
@@ -14,4 +12,6 @@ public class StoryDetailViewModel : BaseViewModel
 
         Item = storiesService.GetStory(itemId);
     }
+
+    public StoriesFeedItem? Item { get; }
 }

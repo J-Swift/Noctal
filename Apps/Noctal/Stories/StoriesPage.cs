@@ -9,12 +9,12 @@ using Google.Android.Material.Shape;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
+using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 #endif
 using DynamicData.Binding;
 using Noctal.Stories.Models;
 using ReactiveUI;
-using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
@@ -34,6 +34,7 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
     public static class Dims
     {
         public static readonly double DimImg = 70;
+        public static readonly double DimImgFavicon = 16;
         public static readonly double DimImgRadius = 4;
         public static readonly double DimVPadding = 16;
         public static readonly double DimHPaddingRow = 4;
@@ -85,13 +86,16 @@ public partial class StoriesPage
 
 internal class MyAdapter : RecyclerView.Adapter
 {
-    private static readonly int LblArticleNumberId = 839183;
-    private static readonly int LblUrlId = 18809001;
-    private static readonly int LblTitleId = 859891;
-    private static readonly int LblAuthorId = 585981;
-    private static readonly int LblTimeAgoId = 38981;
-    private static readonly int LblScoreId = 1828984;
-    private static readonly int LblNumCommentsId = 284981;
+    private static readonly int BaseId = 839183;
+    private static readonly int LblArticleNumberId = BaseId++;
+    private static readonly int LblUrlId = BaseId++;
+    private static readonly int LblTitleId = BaseId++;
+    private static readonly int LblAuthorId = BaseId++;
+    private static readonly int LblTimeAgoId = BaseId++;
+    private static readonly int LblScoreId = BaseId++;
+    private static readonly int LblNumCommentsId = BaseId++;
+    private static readonly int ImgFaviconId = BaseId++;
+    private static readonly int ImgImageId = BaseId++;
     private IList<StoriesFeedItem> Items;
     public EventHandler<EventArgs>? ItemSelected;
 
@@ -104,7 +108,6 @@ internal class MyAdapter : RecyclerView.Adapter
 
     public void SetItems(IList<StoriesFeedItem> newItems)
     {
-        Console.WriteLine("JIMMY SetItems");
         var cb = new Callback(Items, newItems);
         var diff = DiffUtil.CalculateDiff(cb);
         Items = newItems;
@@ -120,6 +123,7 @@ internal class MyAdapter : RecyclerView.Adapter
     private View CreateView(Context context)
     {
         var dimImg = context.ToPixels(StoriesPage.Dims.DimImg);
+        var dimImgFavicon = context.ToPixels(StoriesPage.Dims.DimImgFavicon);
         var dimImgRadius = context.ToPixels(StoriesPage.Dims.DimImgRadius);
         var dimVPadding = context.ToPixels(StoriesPage.Dims.DimVPadding);
         var dimHPadding = context.ToPixels(StoriesPage.Dims.DimHPadding);
@@ -136,7 +140,7 @@ internal class MyAdapter : RecyclerView.Adapter
         var shape = new MaterialShapeDrawable(shapeModel);
         shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
-        var img = new View(context) { Id = 282971, Background = shape };
+        var img = new View(context) { Id = ImgImageId, Background = shape };
 
         container.AddView(img);
 
@@ -146,6 +150,7 @@ internal class MyAdapter : RecyclerView.Adapter
         // Url Row
 
         var row = new LinearLayout(context) { Orientation = Orientation.Horizontal };
+        row.SetVerticalGravity(GravityFlags.Center);
 
         var tv = new NoctalLabel(context) { Id = LblArticleNumberId };
         row.AddView(tv);
@@ -153,7 +158,20 @@ internal class MyAdapter : RecyclerView.Adapter
         var spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
+        shapeModel = new ShapeAppearanceModel().ToBuilder()
+            .SetAllCornerSizes(new RelativeCornerSize(0.5f))
+            .Build();
+        shape = new MaterialShapeDrawable(shapeModel);
+        shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
+
+        var imgFavicon = new View(context) { Id = ImgFaviconId, Background = shape };
+        row.AddView(imgFavicon, new ViewGroup.LayoutParams((int)dimImgFavicon, (int)dimImgFavicon));
+
+        spacer = new View(context);
+        row.AddView(spacer, dimHSpacerPs);
+
         tv = new NoctalLabel(context) { Id = LblUrlId };
+        tv.SetMaxLines(1);
         row.AddView(tv);
 
         sv.AddView(row);
@@ -277,6 +295,8 @@ internal class MyAdapter : RecyclerView.Adapter
     private class ViewHolder : RecyclerView.ViewHolder
     {
         private readonly View Container;
+        private readonly View ImgFavicon;
+        private readonly View ImgImage;
         private readonly NoctalLabel LblArticleNumber;
         private readonly NoctalLabel LblAuthor;
         private readonly NoctalLabel LblNumComments;
@@ -289,6 +309,8 @@ internal class MyAdapter : RecyclerView.Adapter
         public ViewHolder(View view) : base(view)
         {
             Container = view;
+            ImgFavicon = view.FindViewById<View>(ImgFaviconId)!;
+            ImgImage = view.FindViewById<View>(ImgImageId)!;
             LblArticleNumber = view.FindViewById<NoctalLabel>(LblArticleNumberId)!;
             LblUrl = view.FindViewById<NoctalLabel>(LblUrlId)!;
             LblTitle = view.FindViewById<NoctalLabel>(LblTitleId)!;
@@ -307,6 +329,11 @@ internal class MyAdapter : RecyclerView.Adapter
             LblTimeAgo.Text = model.TimeAgo;
             LblScore.Text = model.Score.ToString();
             LblNumComments.Text = $"{model.NumComments} comment" + (model.NumComments > 1 ? "s" : "");
+            var shape = (MaterialShapeDrawable)ImgImage.Background!;
+            shape.FillColor = (model.ImagePath is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToDefaultColorStateList();
+
+            shape = (MaterialShapeDrawable)ImgFavicon.Background!;
+            shape.FillColor = (model.FavIconPath is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToDefaultColorStateList();
 
             OnClick = onClick;
             Container.Click -= HandleClick;
@@ -329,12 +356,37 @@ public partial class StoriesPage : IUICollectionViewDelegate
     {
         SafeViewModel.Items
             .ObserveCollectionChanges()
-            .ObserveOn(RxApp.MainThreadScheduler).Subscribe(_ =>
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(it =>
             {
-                var snapshot = new NSDiffableDataSourceSnapshot<NSNumber, NSNumber>();
-                snapshot.AppendSections(new NSNumber[] { 1 });
-                snapshot.AppendItems(SafeViewModel.Items.Select(it => (NSNumber)it.Id).ToArray(), 1);
-                DataSource.ApplySnapshot(snapshot, true);
+                var action = it.EventArgs.Action;
+                if (action == NotifyCollectionChangedAction.Replace)
+                {
+                    var item = SafeViewModel.Items[it.EventArgs.NewStartingIndex];
+                    if (item is null)
+                    {
+                        Console.WriteLine($"Item not found [{item?.Id}]");
+                        return;
+                    }
+
+                    var snapshot = DataSource.Snapshot;
+                    snapshot.ReconfigureItems(new NSNumber[]
+                    {
+                        item.Id
+                    });
+                    DataSource.ApplySnapshot(snapshot, true);
+                }
+                else
+                {
+                    var items = SafeViewModel.Items;
+                    var snapshot = new NSDiffableDataSourceSnapshot<NSNumber, NSNumber>();
+                    snapshot.AppendSections(new NSNumber[]
+                    {
+                        1
+                    });
+                    snapshot.AppendItems(items.Select(it => (NSNumber)it.Id).ToArray(), 1);
+                    DataSource.ApplySnapshot(snapshot, true);
+                }
             })
             .DisposeWith(disposables);
     }
@@ -359,54 +411,48 @@ public partial class StoriesPage : IUICollectionViewDelegate
 
         Feed = new UICollectionView(CGRect.Empty, layout) { Delegate = this };
 
-        var cellReg = UICollectionViewCellRegistration.GetRegistration(typeof(UICollectionViewCell), (cell, indexPath, item) =>
-        {
-            var tItem = ((ObjectWrapper<StoriesFeedItem>)item).Value;
-            var contentConfig = new StoryFeedView.StoryFeedConfiguration
+        var cellReg = UICollectionViewCellRegistration.GetRegistration(typeof(UICollectionViewCell),
+            (cell, indexPath, item) =>
             {
-                ItemNumber = indexPath.Row + 1,
-                Url = tItem.Url,
-                Title = tItem.Title,
-                Submitter = tItem.Submitter,
-                TimeAgo = tItem.TimeAgo,
-                Score = tItem.Score,
-                NumComments = tItem.NumComments
-            };
-            cell.ContentConfiguration = contentConfig;
-
-            var bgConfig = UIBackgroundConfiguration.ListPlainCellConfiguration;
-            bgConfig.BackgroundColorTransformer = color =>
-            {
-                var state = cell.ConfigurationState;
-                if (state.Highlighted || state.Selected)
+                var tItem = ((ObjectWrapper<StoriesFeedItem>)item).Value;
+                var contentConfig = new StoryFeedView.StoryFeedConfiguration
                 {
-                    return UIColor.SystemGray3;
-                }
+                    ItemNumber = indexPath.Row + 1,
+                    Url = tItem.Url,
+                    Title = tItem.Title,
+                    Submitter = tItem.Submitter,
+                    TimeAgo = tItem.TimeAgo,
+                    Score = tItem.Score,
+                    NumComments = tItem.NumComments,
+                    ImagePath = tItem.ImagePath,
+                    FavIconPath = tItem.FavIconPath
+                };
+                cell.ContentConfiguration = contentConfig;
 
-                return UIColor.Clear;
-            };
-            cell.BackgroundConfiguration = bgConfig;
-        });
+                var bgConfig = UIBackgroundConfiguration.ListPlainCellConfiguration;
+                bgConfig.BackgroundColorTransformer = color =>
+                {
+                    var state = cell.ConfigurationState;
+                    if (state.Highlighted || state.Selected)
+                    {
+                        return UIColor.SystemGray3;
+                    }
 
-        DataSource = new UICollectionViewDiffableDataSource<NSNumber, NSNumber>(Feed, (collectionView, indexPath, itemIdentifier) =>
-        {
-            var item = SafeViewModel.GetItem(((NSNumber)itemIdentifier).Int32Value);
-            return collectionView.DequeueConfiguredReusableCell(cellReg, indexPath, new ObjectWrapper<StoriesFeedItem>(item));
-        });
+                    return UIColor.Clear;
+                };
+                cell.BackgroundConfiguration = bgConfig;
+            });
+
+        DataSource = new UICollectionViewDiffableDataSource<NSNumber, NSNumber>(Feed,
+            (collectionView, indexPath, itemIdentifier) =>
+            {
+                var item = SafeViewModel.GetItem(((NSNumber)itemIdentifier).Int32Value);
+                return collectionView.DequeueConfiguredReusableCell(cellReg, indexPath, new ObjectWrapper<StoriesFeedItem>(item));
+            });
 
         Feed.RegisterClassForCell(typeof(UICollectionViewCell), "cell");
 
         return Feed;
-    }
-
-    public override void ViewDidLoad()
-    {
-        base.ViewDidLoad();
-
-        var snapshot = new NSDiffableDataSourceSnapshot<NSNumber, NSNumber>();
-        snapshot.AppendSections(new NSNumber[] { 1 });
-        snapshot.AppendItems(SafeViewModel.Items.Select(it => (NSNumber)it.Id).ToArray(), 1);
-        DataSource.ApplySnapshot(snapshot, true);
     }
 
     public override void ViewDidAppear(bool animated)
@@ -427,8 +473,10 @@ public partial class StoriesPage : IUICollectionViewDelegate
     }
 }
 
-internal class StoryFeedView : UIView, IUIContentView
+internal sealed class StoryFeedView : UIView, IUIContentView
 {
+    private readonly UIView ImgFavicon;
+    private readonly UIView ImgImage;
     private readonly NoctalLabel LblArticleNumber;
     private readonly NoctalLabel LblAuthor;
     private readonly NoctalLabel LblNumComments;
@@ -445,9 +493,9 @@ internal class StoryFeedView : UIView, IUIContentView
 
         var makeLabel = () => new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false };
 
-        var img = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
-        img.Layer.CornerRadius = (nfloat)StoriesPage.Dims.DimImgRadius;
-        AddSubview(img);
+        ImgImage = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgImage.Layer.CornerRadius = (nfloat)StoriesPage.Dims.DimImgRadius;
+        AddSubview(ImgImage);
 
         var sv = new UIStackView { TranslatesAutoresizingMaskIntoConstraints = false, Axis = UILayoutConstraintAxis.Vertical, Alignment = UIStackViewAlignment.Leading, Spacing = (nfloat)StoriesPage.Dims.DimVPadding };
         AddSubview(sv);
@@ -459,6 +507,12 @@ internal class StoryFeedView : UIView, IUIContentView
         var lbl = makeLabel();
         LblArticleNumber = lbl;
         row.AddArrangedSubview(lbl);
+
+        ImgFavicon = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgFavicon.HeightAnchor.ConstraintEqualTo((NFloat)StoriesPage.Dims.DimImgFavicon).Active = true;
+        ImgFavicon.WidthAnchor.ConstraintEqualTo(ImgFavicon.HeightAnchor).Active = true;
+        ImgFavicon.Layer.CornerRadius = (NFloat)(StoriesPage.Dims.DimImgFavicon / 2.0);
+        row.AddArrangedSubview(ImgFavicon);
 
         lbl = makeLabel();
         LblUrl = lbl;
@@ -512,7 +566,24 @@ internal class StoryFeedView : UIView, IUIContentView
         var separator = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = UIColor.OpaqueSeparator };
         AddSubview(separator);
 
-        NSLayoutConstraint.ActivateConstraints(new[] { separator.HeightAnchor.ConstraintEqualTo(1), separator.LeadingAnchor.ConstraintEqualTo(LeadingAnchor), separator.TrailingAnchor.ConstraintEqualTo(TrailingAnchor), separator.BottomAnchor.ConstraintEqualTo(BottomAnchor), img.LeadingAnchor.ConstraintEqualTo(LeadingAnchor, (nfloat)StoriesPage.Dims.DimHPadding), img.CenterYAnchor.ConstraintEqualTo(CenterYAnchor), img.WidthAnchor.ConstraintEqualTo((nfloat)StoriesPage.Dims.DimImg), img.HeightAnchor.ConstraintEqualTo(img.WidthAnchor), sv.LeadingAnchor.ConstraintEqualTo(img.TrailingAnchor, (nfloat)StoriesPage.Dims.DimHPadding), sv.TrailingAnchor.ConstraintEqualTo(TrailingAnchor, -(nfloat)StoriesPage.Dims.DimHPadding), sv.TopAnchor.ConstraintEqualTo(TopAnchor, (nfloat)StoriesPage.Dims.DimVPadding), sv.BottomAnchor.ConstraintEqualTo(separator.TopAnchor, -(nfloat)StoriesPage.Dims.DimVPadding) });
+        NSLayoutConstraint.ActivateConstraints(new[]
+        {
+            separator.HeightAnchor.ConstraintEqualTo(1),
+            separator.LeadingAnchor.ConstraintEqualTo(LeadingAnchor),
+            separator.TrailingAnchor.ConstraintEqualTo(TrailingAnchor),
+            separator.BottomAnchor.ConstraintEqualTo(BottomAnchor),
+
+            ImgImage.LeadingAnchor.ConstraintEqualTo(LeadingAnchor,
+                (nfloat)StoriesPage.Dims.DimHPadding),
+            ImgImage.CenterYAnchor.ConstraintEqualTo(CenterYAnchor),
+            ImgImage.WidthAnchor.ConstraintEqualTo((nfloat)StoriesPage.Dims.DimImg),
+            ImgImage.HeightAnchor.ConstraintEqualTo(ImgImage.WidthAnchor),
+
+            sv.LeadingAnchor.ConstraintEqualTo(ImgImage.TrailingAnchor, (nfloat)StoriesPage.Dims.DimHPadding),
+            sv.TrailingAnchor.ConstraintEqualTo(TrailingAnchor, -(nfloat)StoriesPage.Dims.DimHPadding),
+            sv.TopAnchor.ConstraintEqualTo(TopAnchor, (nfloat)StoriesPage.Dims.DimVPadding),
+            sv.BottomAnchor.ConstraintEqualTo(separator.TopAnchor, -(nfloat)StoriesPage.Dims.DimVPadding)
+        });
 
         updateConfiguration(configuration);
     }
@@ -538,6 +609,8 @@ internal class StoryFeedView : UIView, IUIContentView
             LblTimeAgo.Text = config.TimeAgo;
             LblScore.Text = config.Score.ToString();
             LblNumComments.Text = $"{config.NumComments} comment" + (config.NumComments > 1 ? "s" : "");
+            ImgImage.BackgroundColor = (config.ImagePath == null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform();
+            ImgFavicon.BackgroundColor = (config.FavIconPath == null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform();
         }
     }
 
@@ -550,6 +623,8 @@ internal class StoryFeedView : UIView, IUIContentView
         public string TimeAgo { get; set; } = "";
         public int Score { get; set; }
         public int NumComments { get; set; }
+        public string? FavIconPath { get; set; }
+        public string? ImagePath { get; set; }
 
         [return: Release]
         public NSObject Copy(NSZone? zone)
@@ -562,7 +637,9 @@ internal class StoryFeedView : UIView, IUIContentView
                 Submitter = Submitter,
                 TimeAgo = TimeAgo,
                 Score = Score,
-                NumComments = NumComments
+                NumComments = NumComments,
+                FavIconPath = FavIconPath,
+                ImagePath = ImagePath
             };
         }
 

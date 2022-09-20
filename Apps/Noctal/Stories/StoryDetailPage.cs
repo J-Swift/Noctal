@@ -10,8 +10,6 @@ using AndroidX.Navigation;
 using Google.Android.Material.Shape;
 
 #elif IOS
-using CoreFoundation;
-using System.Runtime.InteropServices;
 #endif
 
 namespace Noctal.Stories;
@@ -47,6 +45,8 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private NoctalLabel LblScore { get; set; } = null!;
     private NoctalLabel LblAuthor { get; set; } = null!;
     private NoctalLabel LblTimeAgo { get; set; } = null!;
+    private View ImgFavicon { get; set; } = null!;
+    private View ImgImage { get; set; } = null!;
 
     public static (int DestId, Bundle DestArgs) SafeNav(NavController nav, int storyId)
     {
@@ -72,6 +72,26 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         this.OneWayBind(SafeViewModel, vm => vm.Item!.Submitter, v => v.LblAuthor.Text)
             .DisposeWith(disposables);
         this.OneWayBind(SafeViewModel, vm => vm.Item!.TimeAgo, v => v.LblTimeAgo.Text)
+            .DisposeWith(disposables);
+        this.OneWayBind(SafeViewModel,
+                vm => vm.Item!.FavIconPath,
+                v => v.ImgFavicon.Background,
+                it =>
+                {
+                    var shape = (MaterialShapeDrawable)ImgFavicon.Background!;
+                    shape.FillColor = (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToDefaultColorStateList();
+                    return shape;
+                })
+            .DisposeWith(disposables);
+        this.OneWayBind(SafeViewModel,
+                vm => vm.Item!.ImagePath,
+                v => v.ImgImage.Background,
+                it =>
+                {
+                    var shape = (MaterialShapeDrawable)ImgImage.Background!;
+                    shape.FillColor = (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToDefaultColorStateList();
+                    return shape;
+                })
             .DisposeWith(disposables);
     }
 
@@ -120,9 +140,9 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         var shape = new MaterialShapeDrawable(shapeModel);
         shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
-        var imgFavicon = new View(context) { Background = shape };
+        ImgFavicon = new View(context) { Background = shape };
 
-        row.AddView(imgFavicon, new ViewGroup.LayoutParams((int)_dimImgFavicon, (int)_dimImgFavicon));
+        row.AddView(ImgFavicon, new ViewGroup.LayoutParams((int)_dimImgFavicon, (int)_dimImgFavicon));
 
         addSpacer(row, _dimHPaddingRow);
 
@@ -140,7 +160,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             .Build();
         shape = new MaterialShapeDrawable(shapeModel) { FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList() };
 
-        var img = new View(context) { Background = shape };
+        ImgImage = new View(context) { Background = shape };
 
         addSpacer(sv, _dimVPadding);
 
@@ -154,7 +174,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             TopToTop = parentId,
             BottomToBottom = parentId
         };
-        imgWrapper.AddView(img, ps);
+        imgWrapper.AddView(ImgImage, ps);
 
         sv.AddView(imgWrapper, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
 
@@ -199,16 +219,18 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 #elif IOS
 public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 {
+    public StoryDetailPage(int storyId)
+    {
+        StoryId = storyId;
+    }
+
     private NoctalLabel LblTitle { get; set; } = null!;
     private NoctalLabel LblUrl { get; set; } = null!;
     private NoctalLabel LblScore { get; set; } = null!;
     private NoctalLabel LblAuthor { get; set; } = null!;
     private NoctalLabel LblTimeAgo { get; set; } = null!;
-
-    public StoryDetailPage(int storyId) : base()
-    {
-        StoryId = storyId;
-    }
+    private UIView ImgFavicon { get; set; } = null!;
+    private UIView ImgImage { get; set; } = null!;
 
     protected override void BindView(CompositeDisposable disposables)
     {
@@ -222,30 +244,20 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             .DisposeWith(disposables);
         this.OneWayBind(SafeViewModel, vm => vm.Item!.TimeAgo, v => v.LblTimeAgo.Text)
             .DisposeWith(disposables);
+        this.OneWayBind(SafeViewModel, vm => vm.Item!.FavIconPath, v => v.ImgFavicon.BackgroundColor, it => (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform())
+            .DisposeWith(disposables);
+        this.OneWayBind(SafeViewModel, vm => vm.Item!.ImagePath, v => v.ImgImage.BackgroundColor, it => (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform())
+            .DisposeWith(disposables);
     }
 
     protected override UIView CreateView()
     {
-        var makeLabel = () => new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false, };
-        var makeRow = () => new UIStackView
-        {
-            TranslatesAutoresizingMaskIntoConstraints = false,
-            Axis = UILayoutConstraintAxis.Horizontal,
-            Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow,
-        };
+        var makeLabel = () => new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false };
+        var makeRow = () => new UIStackView { TranslatesAutoresizingMaskIntoConstraints = false, Axis = UILayoutConstraintAxis.Horizontal, Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow };
 
-        var scroll = new UIScrollView
-        {
-            BackgroundColor = SceneDelegate.Theme.BackgroundColor,
-        };
+        var scroll = new UIScrollView { BackgroundColor = SceneDelegate.Theme.BackgroundColor };
 
-        var sv = new UIStackView
-        {
-            TranslatesAutoresizingMaskIntoConstraints = false,
-            Axis = UILayoutConstraintAxis.Vertical,
-            Spacing = (nfloat)Dims.DimVPadding,
-            Alignment = UIStackViewAlignment.Leading,
-        };
+        var sv = new UIStackView { TranslatesAutoresizingMaskIntoConstraints = false, Axis = UILayoutConstraintAxis.Vertical, Spacing = (nfloat)Dims.DimVPadding, Alignment = UIStackViewAlignment.Leading };
 
         LblTitle = makeLabel();
         LblTitle.Lines = 0;
@@ -255,15 +267,11 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         var row = makeRow();
 
-        var imgFavicon = new UIView
-        {
-            TranslatesAutoresizingMaskIntoConstraints = false,
-            BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform(),
-        };
-        imgFavicon.WidthAnchor.ConstraintEqualTo((nfloat)Dims.DimImgFavicon).Active = true;
-        imgFavicon.HeightAnchor.ConstraintEqualTo((nfloat)Dims.DimImgFavicon).Active = true;
-        imgFavicon.Layer.CornerRadius = (nfloat)(Dims.DimImgFavicon / 2.0);
-        row.AddArrangedSubview(imgFavicon);
+        ImgFavicon = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgFavicon.WidthAnchor.ConstraintEqualTo((nfloat)Dims.DimImgFavicon).Active = true;
+        ImgFavicon.HeightAnchor.ConstraintEqualTo((nfloat)Dims.DimImgFavicon).Active = true;
+        ImgFavicon.Layer.CornerRadius = (nfloat)(Dims.DimImgFavicon / 2.0);
+        row.AddArrangedSubview(ImgFavicon);
 
         var lbl = makeLabel();
         LblUrl = lbl;
@@ -273,15 +281,11 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         // Image Row
 
-        var img = new UIView
-        {
-            TranslatesAutoresizingMaskIntoConstraints = false,
-            BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform(),
-        };
-        img.Layer.CornerRadius = (nfloat)Dims.DimImgRadius;
-        sv.AddArrangedSubview(img);
-        img.WidthAnchor.ConstraintEqualTo(sv.WidthAnchor).Active = true;
-        img.HeightAnchor.ConstraintEqualTo(img.WidthAnchor, (nfloat)Dims.DimImgHeightRatio).Active = true;
+        ImgImage = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgImage.Layer.CornerRadius = (nfloat)Dims.DimImgRadius;
+        sv.AddArrangedSubview(ImgImage);
+        ImgImage.WidthAnchor.ConstraintEqualTo(sv.WidthAnchor).Active = true;
+        ImgImage.HeightAnchor.ConstraintEqualTo(ImgImage.WidthAnchor, (nfloat)Dims.DimImgHeightRatio).Active = true;
 
         // Author Row
 
@@ -307,12 +311,10 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         LblTimeAgo = lbl;
         row.AddArrangedSubview(lbl);
 
-        sv.AddArrangedSubview(row); ;
+        sv.AddArrangedSubview(row);
+        ;
 
-        var svWrapper = new UIView
-        {
-            TranslatesAutoresizingMaskIntoConstraints = false,
-        };
+        var svWrapper = new UIView { TranslatesAutoresizingMaskIntoConstraints = false };
         svWrapper.AddSubview(sv);
         scroll.AddSubview(svWrapper);
 
@@ -323,12 +325,12 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             svWrapper.TopAnchor.ConstraintEqualTo(scroll.TopAnchor),
             svWrapper.BottomAnchor.ConstraintEqualTo(scroll.BottomAnchor),
 
-            svWrapper.WidthAnchor.ConstraintEqualTo(scroll.WidthAnchor, 1, -2*(nfloat)Dims.DimHPadding),
+            svWrapper.WidthAnchor.ConstraintEqualTo(scroll.WidthAnchor, 1, -2 * (nfloat)Dims.DimHPadding),
 
             sv.LeadingAnchor.ConstraintEqualTo(svWrapper.LeadingAnchor),
             sv.TrailingAnchor.ConstraintEqualTo(svWrapper.TrailingAnchor),
             sv.TopAnchor.ConstraintEqualTo(svWrapper.TopAnchor),
-            sv.BottomAnchor.ConstraintEqualTo(svWrapper.BottomAnchor),
+            sv.BottomAnchor.ConstraintEqualTo(svWrapper.BottomAnchor)
         });
 
         return scroll;

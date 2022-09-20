@@ -34,27 +34,32 @@ public class StoriesService
         var stories = await _hnApi.GetStoriesAsync().ConfigureAwait(false);
         var items = new List<StoriesFeedItem>();
 
-        _storiesCache.Edit(list =>
-        {
-            list.Clear();
-            foreach (var story in stories)
+        _storiesCache.Edit(
+            list =>
             {
-                var item = ItemFrom(story);
-                items.Add(item);
-                list.AddOrUpdate(item);
+                list.Clear();
+                foreach (var story in stories)
+                {
+                    var item = ItemFrom(story);
+                    items.Add(item);
+                    list.AddOrUpdate(item);
+                }
             }
-        });
+        );
 
         foreach (var item in items)
         {
 #pragma warning disable CS4014
-            _queue.FetchMeta(item.Url, res =>
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
+            _queue.FetchMeta(
+                item.Url,
+                res =>
                 {
-                    _storiesCache.AddOrUpdate(item with { ImagePath = res.OgImagePath, FavIconPath = res.FavIconPath });
-                });
-            });
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        _storiesCache.AddOrUpdate(item with { ImagePath = res.OgImagePath, FavIconPath = res.FavIconPath });
+                    });
+                }
+            );
 #pragma warning restore CS4014
         }
     }
@@ -120,20 +125,21 @@ internal class MetaFetcherQueue
     public void FetchMeta(string urlPath, Action<MetaResult> onComplete)
     {
         Task.Run(async () =>
-        {
-            try
             {
-                await _pool.WaitAsync().ConfigureAwait(false);
+                try
+                {
+                    await _pool.WaitAsync().ConfigureAwait(false);
 
-                var result = await _fetcher.GetMeta(urlPath).ConfigureAwait(false);
-                onComplete(result);
+                    var result = await _fetcher.GetMeta(urlPath).ConfigureAwait(false);
+                    onComplete(result);
 
-                _pool.Release();
+                    _pool.Release();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        });
+        );
     }
 }
