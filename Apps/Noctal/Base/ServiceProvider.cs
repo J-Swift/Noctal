@@ -17,7 +17,7 @@ public class ServiceProvider
 
     public void RegisterService<TService>(TService service) where TService : notnull
     {
-        _registry[service.GetType()] = service;
+        _registry[typeof(TService)] = service;
     }
 
     public TService GetRequiredService<TService>() where TService : class
