@@ -1,0 +1,3 @@
+[submodule "external/NukeProxy"]
+	path = external/NukeProxy
+	url = https://github.com/roubachof/NukeProxy
