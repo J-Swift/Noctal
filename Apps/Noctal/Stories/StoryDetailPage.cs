@@ -1,5 +1,7 @@
+using Noctal.ImageLoading;
 using ReactiveUI;
 using System.Reactive.Disposables;
+
 #if ANDROID
 using Android.Content;
 using Android.OS;
@@ -8,6 +10,7 @@ using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
 using AndroidX.Navigation;
 using Google.Android.Material.Shape;
+using Google.Android.Material.ImageView;
 
 #elif IOS
 #endif
@@ -16,6 +19,7 @@ namespace Noctal.Stories;
 
 public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 {
+    // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Local
     private int StoryId { get; set; }
 
     protected override StoryDetailViewModel CreateViewModel()
@@ -45,8 +49,8 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private NoctalLabel LblScore { get; set; } = null!;
     private NoctalLabel LblAuthor { get; set; } = null!;
     private NoctalLabel LblTimeAgo { get; set; } = null!;
-    private View ImgFavicon { get; set; } = null!;
-    private View ImgImage { get; set; } = null!;
+    private ImageView ImgFavicon { get; set; } = null!;
+    private ImageView ImgImage { get; set; } = null!;
 
     public static (int DestId, Bundle DestArgs) SafeNav(NavController nav, int storyId)
     {
@@ -73,25 +77,19 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             .DisposeWith(disposables);
         this.OneWayBind(SafeViewModel, vm => vm.Item!.TimeAgo, v => v.LblTimeAgo.Text)
             .DisposeWith(disposables);
-        this.OneWayBind(SafeViewModel,
-                vm => vm.Item!.FavIconPath,
-                v => v.ImgFavicon.Background,
-                it =>
-                {
-                    var shape = (MaterialShapeDrawable)ImgFavicon.Background!;
-                    shape.FillColor = (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToDefaultColorStateList();
-                    return shape;
-                })
+        SafeViewModel.WhenAnyValue(vm => vm.Item!.FavIconPath)
+            .Subscribe(it =>
+            {
+                var svc = ServiceProvider.GetService<IImageLoader>();
+                svc.LoadInto(this, ImgFavicon, it);
+            })
             .DisposeWith(disposables);
-        this.OneWayBind(SafeViewModel,
-                vm => vm.Item!.ImagePath,
-                v => v.ImgImage.Background,
-                it =>
-                {
-                    var shape = (MaterialShapeDrawable)ImgImage.Background!;
-                    shape.FillColor = (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToDefaultColorStateList();
-                    return shape;
-                })
+        SafeViewModel.WhenAnyValue(vm => vm.Item!.ImagePath)
+            .Subscribe(it =>
+            {
+                var svc = ServiceProvider.GetService<IImageLoader>();
+                svc.LoadInto(this, ImgImage, it);
+            })
             .DisposeWith(disposables);
     }
 
@@ -137,10 +135,11 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         var shapeModel = new ShapeAppearanceModel().ToBuilder()
             .SetAllCornerSizes(new RelativeCornerSize(0.5f))
             .Build();
-        var shape = new MaterialShapeDrawable(shapeModel);
-        shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
+        // var shape = new MaterialShapeDrawable(shapeModel);
+        // shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
-        ImgFavicon = new View(context) { Background = shape };
+        // ImgFavicon = new View(context) { Background = shape };
+        ImgFavicon = new ShapeableImageView(context) { ShapeAppearanceModel = shapeModel };
 
         row.AddView(ImgFavicon, new ViewGroup.LayoutParams((int)_dimImgFavicon, (int)_dimImgFavicon));
 
@@ -158,9 +157,10 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         shapeModel = new ShapeAppearanceModel().ToBuilder()
             .SetAllCorners(CornerFamily.Rounded, _dimImgRadius)
             .Build();
-        shape = new MaterialShapeDrawable(shapeModel) { FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList() };
+        // var shape = new MaterialShapeDrawable(shapeModel) { FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList() };
 
-        ImgImage = new View(context) { Background = shape };
+        // ImgImage = new ImageView(context) { Background = shape };
+        ImgImage = new ShapeableImageView(context) { ShapeAppearanceModel = shapeModel };
 
         addSpacer(sv, _dimVPadding);
 
@@ -229,8 +229,8 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private NoctalLabel LblScore { get; set; } = null!;
     private NoctalLabel LblAuthor { get; set; } = null!;
     private NoctalLabel LblTimeAgo { get; set; } = null!;
-    private UIView ImgFavicon { get; set; } = null!;
-    private UIView ImgImage { get; set; } = null!;
+    private UIImageView ImgFavicon { get; set; } = null!;
+    private UIImageView ImgImage { get; set; } = null!;
 
     protected override void BindView(CompositeDisposable disposables)
     {
@@ -244,9 +244,23 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             .DisposeWith(disposables);
         this.OneWayBind(SafeViewModel, vm => vm.Item!.TimeAgo, v => v.LblTimeAgo.Text)
             .DisposeWith(disposables);
-        this.OneWayBind(SafeViewModel, vm => vm.Item!.FavIconPath, v => v.ImgFavicon.BackgroundColor, it => (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform())
+        // this.OneWayBind(SafeViewModel, vm => vm.Item!.FavIconPath, v => v.ImgFavicon.BackgroundColor, it => (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform())
+        //     .DisposeWith(disposables);
+        // this.OneWayBind(SafeViewModel, vm => vm.Item!.ImagePath, v => v.ImgImage.BackgroundColor, it => (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform())
+        //     .DisposeWith(disposables);
+        SafeViewModel.WhenAnyValue(vm => vm.Item!.FavIconPath)
+            .Subscribe(it =>
+            {
+                var svc = ServiceProvider.GetService<IImageLoader>();
+                svc.LoadInto(ImgFavicon, it);
+            })
             .DisposeWith(disposables);
-        this.OneWayBind(SafeViewModel, vm => vm.Item!.ImagePath, v => v.ImgImage.BackgroundColor, it => (it is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform())
+        SafeViewModel.WhenAnyValue(vm => vm.Item!.ImagePath)
+            .Subscribe(it =>
+            {
+                var svc = ServiceProvider.GetService<IImageLoader>();
+                svc.LoadInto(ImgImage, it);
+            })
             .DisposeWith(disposables);
     }
 
@@ -267,7 +281,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         var row = makeRow();
 
-        ImgFavicon = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgFavicon = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
         ImgFavicon.WidthAnchor.ConstraintEqualTo((nfloat)Dims.DimImgFavicon).Active = true;
         ImgFavicon.HeightAnchor.ConstraintEqualTo((nfloat)Dims.DimImgFavicon).Active = true;
         ImgFavicon.Layer.CornerRadius = (nfloat)(Dims.DimImgFavicon / 2.0);
@@ -281,7 +295,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         // Image Row
 
-        ImgImage = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ContentMode = UIViewContentMode.ScaleAspectFit, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
         ImgImage.Layer.CornerRadius = (nfloat)Dims.DimImgRadius;
         sv.AddArrangedSubview(ImgImage);
         ImgImage.WidthAnchor.ConstraintEqualTo(sv.WidthAnchor).Active = true;

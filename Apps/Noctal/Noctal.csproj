@@ -64,6 +64,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Libs\Module.HN.Api\Module.HN.Api.csproj" />
+    <ProjectReference Include="..\..\Libs\Module.ImageLoading\Module.ImageLoading.csproj" />
     <ProjectReference Include="..\..\Libs\Module.MetaFetcher\Module.MetaFetcher.csproj" />
     <ProjectReference Include="..\..\Libs\Noctal.UI\Noctal.UI.csproj" />
     <Using Alias="NoctalLabel" Include="Noctal.UI.Controls.Label" />

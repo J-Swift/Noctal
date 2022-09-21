@@ -5,9 +5,12 @@ using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.Shape;
+using Google.Android.Material.ImageView;
+using Noctal.ImageLoading;
 #elif IOS
 using CoreGraphics;
 using Foundation;
+using Noctal.ImageLoading;
 using ObjCRuntime;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
@@ -137,10 +140,10 @@ internal class MyAdapter : RecyclerView.Adapter
         var shapeModel = new ShapeAppearanceModel().ToBuilder()
             .SetAllCorners(CornerFamily.Rounded, dimImgRadius)
             .Build();
-        var shape = new MaterialShapeDrawable(shapeModel);
-        shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
+        // var shape = new MaterialShapeDrawable(shapeModel);
+        // shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
-        var img = new View(context) { Id = ImgImageId, Background = shape };
+        var img = new ShapeableImageView(context) { Id = ImgImageId, ShapeAppearanceModel = shapeModel };
 
         container.AddView(img);
 
@@ -161,10 +164,10 @@ internal class MyAdapter : RecyclerView.Adapter
         shapeModel = new ShapeAppearanceModel().ToBuilder()
             .SetAllCornerSizes(new RelativeCornerSize(0.5f))
             .Build();
-        shape = new MaterialShapeDrawable(shapeModel);
-        shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
+        // shape = new MaterialShapeDrawable(shapeModel);
+        // shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
-        var imgFavicon = new View(context) { Id = ImgFaviconId, Background = shape };
+        var imgFavicon = new ShapeableImageView(context) { Id = ImgFaviconId, ShapeAppearanceModel = shapeModel };
         row.AddView(imgFavicon, new ViewGroup.LayoutParams((int)dimImgFavicon, (int)dimImgFavicon));
 
         spacer = new View(context);
@@ -295,8 +298,9 @@ internal class MyAdapter : RecyclerView.Adapter
     private class ViewHolder : RecyclerView.ViewHolder
     {
         private readonly View Container;
-        private readonly View ImgFavicon;
-        private readonly View ImgImage;
+        private readonly IImageLoader ImageLoader;
+        private readonly ShapeableImageView ImgFavicon;
+        private readonly ShapeableImageView ImgImage;
         private readonly NoctalLabel LblArticleNumber;
         private readonly NoctalLabel LblAuthor;
         private readonly NoctalLabel LblNumComments;
@@ -309,8 +313,8 @@ internal class MyAdapter : RecyclerView.Adapter
         public ViewHolder(View view) : base(view)
         {
             Container = view;
-            ImgFavicon = view.FindViewById<View>(ImgFaviconId)!;
-            ImgImage = view.FindViewById<View>(ImgImageId)!;
+            ImgFavicon = view.FindViewById<ShapeableImageView>(ImgFaviconId)!;
+            ImgImage = view.FindViewById<ShapeableImageView>(ImgImageId)!;
             LblArticleNumber = view.FindViewById<NoctalLabel>(LblArticleNumberId)!;
             LblUrl = view.FindViewById<NoctalLabel>(LblUrlId)!;
             LblTitle = view.FindViewById<NoctalLabel>(LblTitleId)!;
@@ -318,6 +322,7 @@ internal class MyAdapter : RecyclerView.Adapter
             LblTimeAgo = view.FindViewById<NoctalLabel>(LblTimeAgoId)!;
             LblScore = view.FindViewById<NoctalLabel>(LblScoreId)!;
             LblNumComments = view.FindViewById<NoctalLabel>(LblNumCommentsId)!;
+            ImageLoader = ServiceProvider.GetService<IImageLoader>();
         }
 
         public void Bind(int articleNumber, StoriesFeedItem model, Action onClick)
@@ -329,11 +334,8 @@ internal class MyAdapter : RecyclerView.Adapter
             LblTimeAgo.Text = model.TimeAgo;
             LblScore.Text = model.Score.ToString();
             LblNumComments.Text = $"{model.NumComments} comment" + (model.NumComments > 1 ? "s" : "");
-            var shape = (MaterialShapeDrawable)ImgImage.Background!;
-            shape.FillColor = (model.ImagePath is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToDefaultColorStateList();
-
-            shape = (MaterialShapeDrawable)ImgFavicon.Background!;
-            shape.FillColor = (model.FavIconPath is null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToDefaultColorStateList();
+            ImageLoader.LoadInto(Container.Context!, ImgImage, model.ImagePath);
+            ImageLoader.LoadInto(Container.Context!, ImgFavicon, model.FavIconPath);
 
             OnClick = onClick;
             Container.Click -= HandleClick;
@@ -475,8 +477,9 @@ public partial class StoriesPage : IUICollectionViewDelegate
 
 internal sealed class StoryFeedView : UIView, IUIContentView
 {
-    private readonly UIView ImgFavicon;
-    private readonly UIView ImgImage;
+    private readonly IImageLoader ImageLoader;
+    private readonly UIImageView ImgFavicon;
+    private readonly UIImageView ImgImage;
     private readonly NoctalLabel LblArticleNumber;
     private readonly NoctalLabel LblAuthor;
     private readonly NoctalLabel LblNumComments;
@@ -489,11 +492,12 @@ internal sealed class StoryFeedView : UIView, IUIContentView
 
     private StoryFeedView(StoryFeedConfiguration configuration) : base(CGRect.Empty)
     {
+        ImageLoader = ServiceProvider.GetService<IImageLoader>();
         _configuration = configuration;
 
         var makeLabel = () => new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false };
 
-        ImgImage = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
         ImgImage.Layer.CornerRadius = (nfloat)StoriesPage.Dims.DimImgRadius;
         AddSubview(ImgImage);
 
@@ -508,7 +512,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         LblArticleNumber = lbl;
         row.AddArrangedSubview(lbl);
 
-        ImgFavicon = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgFavicon = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
         ImgFavicon.HeightAnchor.ConstraintEqualTo((NFloat)StoriesPage.Dims.DimImgFavicon).Active = true;
         ImgFavicon.WidthAnchor.ConstraintEqualTo(ImgFavicon.HeightAnchor).Active = true;
         ImgFavicon.Layer.CornerRadius = (NFloat)(StoriesPage.Dims.DimImgFavicon / 2.0);
@@ -609,8 +613,8 @@ internal sealed class StoryFeedView : UIView, IUIContentView
             LblTimeAgo.Text = config.TimeAgo;
             LblScore.Text = config.Score.ToString();
             LblNumComments.Text = $"{config.NumComments} comment" + (config.NumComments > 1 ? "s" : "");
-            ImgImage.BackgroundColor = (config.ImagePath == null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform();
-            ImgFavicon.BackgroundColor = (config.FavIconPath == null ? Colors.Red : Colors.Green).WithAlpha(0.3f).ToPlatform();
+            ImageLoader.LoadInto(ImgImage, config.ImagePath);
+            ImageLoader.LoadInto(ImgFavicon, config.FavIconPath);
         }
     }
 
