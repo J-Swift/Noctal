@@ -1,3 +1,8 @@
+using DynamicData.Binding;
+using Noctal.Stories.Models;
+using ReactiveUI;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 #if ANDROID
 using Android.Content;
 using Android.Views;
@@ -7,6 +12,7 @@ using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.Shape;
 using Google.Android.Material.ImageView;
 using Noctal.ImageLoading;
+
 #elif IOS
 using CoreGraphics;
 using Foundation;
@@ -15,11 +21,6 @@ using ObjCRuntime;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 #endif
-using DynamicData.Binding;
-using Noctal.Stories.Models;
-using ReactiveUI;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 
 namespace Noctal.Stories;
 
@@ -174,6 +175,7 @@ internal class MyAdapter : RecyclerView.Adapter
         row.AddView(spacer, dimHSpacerPs);
 
         tv = new NoctalLabel(context) { Id = LblUrlId };
+        tv.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.Uniform);
         tv.SetMaxLines(1);
         row.AddView(tv);
 
@@ -327,8 +329,9 @@ internal class MyAdapter : RecyclerView.Adapter
 
         public void Bind(int articleNumber, StoriesFeedItem model, Action onClick)
         {
+            Uri.TryCreate(model.Url, UriKind.Absolute, out var uri);
             LblArticleNumber.Text = $"{articleNumber}.";
-            LblUrl.Text = model.Url;
+            LblUrl.Text = uri?.Host ?? " ";
             LblTitle.Text = model.Title;
             LblAuthor.Text = model.Submitter;
             LblTimeAgo.Text = model.TimeAgo;
@@ -519,6 +522,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         row.AddArrangedSubview(ImgFavicon);
 
         lbl = makeLabel();
+        lbl.AdjustsFontSizeToFitWidth = true;
         LblUrl = lbl;
         row.AddArrangedSubview(lbl);
 
@@ -606,8 +610,9 @@ internal sealed class StoryFeedView : UIView, IUIContentView
     {
         if (weakConfig is StoryFeedConfiguration config)
         {
+            Uri.TryCreate(config.Url, UriKind.Absolute, out var uri);
             LblArticleNumber.Text = $"{config.ItemNumber}.";
-            LblUrl.Text = config.Url;
+            LblUrl.Text = uri?.Host ?? " ";
             LblTitle.Text = config.Title;
             LblAuthor.Text = config.Submitter;
             LblTimeAgo.Text = config.TimeAgo;
@@ -620,7 +625,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
 
     public class StoryFeedConfiguration : NSObject, IUIContentConfiguration
     {
-        public int ItemNumber { get; set; }
+        public int ItemNumber { get; set; } = 1;
         public string Url { get; set; } = "";
         public string Title { get; set; } = "";
         public string Submitter { get; set; } = "";

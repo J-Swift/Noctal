@@ -69,7 +69,14 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     {
         this.OneWayBind(SafeViewModel, vm => vm.Item!.Title, v => v.LblTitle.Text)
             .DisposeWith(disposables);
-        this.OneWayBind(SafeViewModel, vm => vm.Item!.Url, v => v.LblUrl.Text)
+        this.OneWayBind(SafeViewModel,
+                vm => vm.Item!.Url,
+                v => v.LblUrl.Text,
+                it =>
+                {
+                    Uri.TryCreate(it, UriKind.Absolute, out var uri);
+                    return uri?.Host ?? " ";
+                })
             .DisposeWith(disposables);
         this.OneWayBind(SafeViewModel, vm => vm.Item!.Score, v => v.LblScore.Text)
             .DisposeWith(disposables);
@@ -236,7 +243,14 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     {
         this.OneWayBind(SafeViewModel, vm => vm.Item!.Title, v => v.LblTitle.Text)
             .DisposeWith(disposables);
-        this.OneWayBind(SafeViewModel, vm => vm.Item!.Url, v => v.LblUrl.Text)
+        this.OneWayBind(SafeViewModel,
+                vm => vm.Item!.Url,
+                v => v.LblUrl.Text,
+                it =>
+                {
+                    Uri.TryCreate(it, UriKind.Absolute, out var uri);
+                    return uri?.Host ?? " ";
+                })
             .DisposeWith(disposables);
         this.OneWayBind(SafeViewModel, vm => vm.Item!.Score, v => v.LblScore.Text)
             .DisposeWith(disposables);
