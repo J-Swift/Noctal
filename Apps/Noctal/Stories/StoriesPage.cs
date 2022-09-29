@@ -145,6 +145,7 @@ internal class MyAdapter : RecyclerView.Adapter
         // shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
         var img = new ShapeableImageView(context) { Id = ImgImageId, ShapeAppearanceModel = shapeModel };
+        img.SetScaleType(ImageView.ScaleType.CenterCrop);
 
         container.AddView(img);
 

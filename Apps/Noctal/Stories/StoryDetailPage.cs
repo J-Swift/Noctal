@@ -1,7 +1,6 @@
 using Noctal.ImageLoading;
 using ReactiveUI;
 using System.Reactive.Disposables;
-
 #if ANDROID
 using Android.Content;
 using Android.OS;
@@ -168,6 +167,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         // ImgImage = new ImageView(context) { Background = shape };
         ImgImage = new ShapeableImageView(context) { ShapeAppearanceModel = shapeModel };
+        ImgImage.SetScaleType(ImageView.ScaleType.CenterCrop);
 
         addSpacer(sv, _dimVPadding);
 
@@ -309,7 +309,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         // Image Row
 
-        ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ContentMode = UIViewContentMode.ScaleAspectFit, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
         ImgImage.Layer.CornerRadius = (nfloat)Dims.DimImgRadius;
         sv.AddArrangedSubview(ImgImage);
         ImgImage.WidthAnchor.ConstraintEqualTo(sv.WidthAnchor).Active = true;
