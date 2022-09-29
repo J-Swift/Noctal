@@ -7,7 +7,9 @@ using Fragment = AndroidX.Fragment.App.Fragment;
 #elif IOS
 using Foundation;
 
-// using Xamarin.Nuke;
+// ReSharper disable once RedundantUsingDirective
+using ImageCaching.Nuke;
+
 #endif
 
 namespace Noctal.ImageLoading;
@@ -42,17 +44,14 @@ public class ImageLoader : IImageLoader
         config.Into(request.View);
     }
 #elif IOS
-    public void LoadInto(UIImageView view, string? urlPath)
+    public void LoadInto(IImageLoader.LoadRequest request)
     {
-        if (urlPath is null)
-        {
-            view.Image = null;
-            return;
-        }
-
+        var url = request.UrlPath == null ? null : new NSUrl(request.UrlPath);
         ImageCaching.Nuke.ImagePipeline.Shared.LoadImageWithUrl(
-            new NSUrl(urlPath),
-            (img, url) => view.Image = img
+            url,
+            request.Placeholder,
+            request.Placeholder,
+            request.View
         );
     }
 #endif

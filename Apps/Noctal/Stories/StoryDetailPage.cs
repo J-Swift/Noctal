@@ -1,6 +1,7 @@
 using Noctal.ImageLoading;
 using ReactiveUI;
 using System.Reactive.Disposables;
+
 #if ANDROID
 using Android.Content;
 using Android.OS;
@@ -265,14 +266,14 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             {
                 ImgFavicon.Hidden = it == null;
                 var svc = ServiceProvider.GetService<IImageLoader>();
-                svc.LoadInto(ImgFavicon, it);
+                svc.LoadInto(new IImageLoader.LoadRequest(ImgFavicon, it));
             })
             .DisposeWith(disposables);
         SafeViewModel.WhenAnyValue(vm => vm.Item!.ImagePath)
             .Subscribe(it =>
             {
                 var svc = ServiceProvider.GetService<IImageLoader>();
-                svc.LoadInto(ImgImage, it);
+                svc.LoadInto(new IImageLoader.LoadRequest(ImgImage, it));
             })
             .DisposeWith(disposables);
     }

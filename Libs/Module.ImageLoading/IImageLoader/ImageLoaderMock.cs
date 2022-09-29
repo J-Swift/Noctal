@@ -24,7 +24,7 @@ public class ImageLoaderMock : IImageLoader
         throw new NotImplementedException();
     }
 #elif IOS
-    public void LoadInto(UIImageView view, string? urlPath)
+    public void LoadInto(IImageLoader.LoadRequest request)
     {
         throw new NotImplementedException();
     }

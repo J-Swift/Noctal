@@ -16,6 +16,7 @@ public interface IImageLoader
     public void LoadInto(Fragment context, LoadRequest request);
     public void LoadInto(Context context, LoadRequest request);
 #elif IOS
-    public void LoadInto(UIImageView view, string? urlPath);
+    public record LoadRequest(UIImageView View, string? UrlPath, UIImage? Placeholder = null);
+    public void LoadInto(LoadRequest request);
 #endif
 }

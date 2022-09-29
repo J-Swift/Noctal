@@ -1,10 +1,5 @@
-using DynamicData.Binding;
-using Noctal.Stories.Models;
-using ReactiveUI;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using Color = Microsoft.Maui.Graphics.Color;
 #if ANDROID
+using Color = Microsoft.Maui.Graphics.Color;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
@@ -15,7 +10,6 @@ using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.Shape;
 using Google.Android.Material.ImageView;
 using Noctal.ImageLoading;
-
 #elif IOS
 using CoreGraphics;
 using Foundation;
@@ -24,6 +18,11 @@ using ObjCRuntime;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 #endif
+using DynamicData.Binding;
+using Noctal.Stories.Models;
+using ReactiveUI;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 
 namespace Noctal.Stories;
 
@@ -467,6 +466,7 @@ public partial class StoriesPage : IUICollectionViewDelegate
                 var tItem = ((ObjectWrapper<StoriesFeedItem>)item).Value;
                 var contentConfig = new StoryFeedView.StoryFeedConfiguration
                 {
+                    DimImg = (int)Dims.DimImg,
                     ItemNumber = indexPath.Row + 1,
                     Url = tItem.Url,
                     Title = tItem.Title,
@@ -525,6 +525,13 @@ public partial class StoriesPage : IUICollectionViewDelegate
 
 internal sealed class StoryFeedView : UIView, IUIContentView
 {
+    private static readonly IList<Color> BgColors = new[]
+    {
+        Color.FromRgb(143, 144, 161),
+        Color.FromRgb(81, 91, 92),
+        Color.FromRgb(52, 63, 62)
+    };
+
     private readonly IImageLoader ImageLoader;
     private readonly UIImageView ImgFavicon;
     private readonly UIImageView ImgImage;
@@ -545,7 +552,8 @@ internal sealed class StoryFeedView : UIView, IUIContentView
 
         var makeLabel = () => new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false };
 
-        ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        // ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill };
         ImgImage.Layer.CornerRadius = (nfloat)StoriesPage.Dims.DimImgRadius;
         AddSubview(ImgImage);
 
@@ -663,10 +671,37 @@ internal sealed class StoryFeedView : UIView, IUIContentView
             LblTimeAgo.Text = config.TimeAgo;
             LblScore.Text = config.Score.ToString();
             LblNumComments.Text = $"{config.NumComments} comment" + (config.NumComments > 1 ? "s" : "");
-            ImageLoader.LoadInto(ImgImage, config.ImagePath);
-            ImageLoader.LoadInto(ImgFavicon, config.FavIconPath);
+            ImageLoader.LoadInto(new IImageLoader.LoadRequest(ImgImage, config.ImagePath, PlaceholderFor(config.DimImg, config.ItemNumber, uri)));
+            ImageLoader.LoadInto(new IImageLoader.LoadRequest(ImgFavicon, config.FavIconPath));
         }
     }
+
+    // TODO(jpr): cache
+    private UIImage PlaceholderFor(int dimImg, int articleNumber, Uri? uri)
+    {
+        var text = "Y";
+        if (uri is not null)
+        {
+            var parts = uri.Host.Split(".");
+            var x = parts[^2];
+            text = x[0].ToString();
+        }
+
+        var view = new NoctalLabel();
+        view.BackgroundColor = BgColors[articleNumber % BgColors.Count].ToPlatform();
+        view.Text = text.ToUpper();
+        view.Font = view.Font.WithSize(32);
+        view.TextAlignment = UITextAlignment.Center;
+        view.Frame = new CGRect(0, 0, dimImg, dimImg);
+
+        var renderer = new UIGraphicsImageRenderer(view.Bounds.Size);
+        var image = renderer.CreateImage(ctx =>
+        {
+            view.Layer.RenderInContext(ctx.CGContext);
+        });
+        return image;
+    }
+
 
     public class StoryFeedConfiguration : NSObject, IUIContentConfiguration
     {
@@ -679,6 +714,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         public int NumComments { get; set; }
         public string? FavIconPath { get; set; }
         public string? ImagePath { get; set; }
+        public int DimImg { get; set; }
 
         [return: Release]
         public NSObject Copy(NSZone? zone)
@@ -693,7 +729,8 @@ internal sealed class StoryFeedView : UIView, IUIContentView
                 Score = Score,
                 NumComments = NumComments,
                 FavIconPath = FavIconPath,
-                ImagePath = ImagePath
+                ImagePath = ImagePath,
+                DimImg = DimImg
             };
         }
 
