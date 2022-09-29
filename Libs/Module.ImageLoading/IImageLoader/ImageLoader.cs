@@ -1,6 +1,5 @@
 #if ANDROID
 using Android.Content;
-using Android.Widget;
 using Android.App;
 using Bumptech.Glide;
 using Fragment = AndroidX.Fragment.App.Fragment;
@@ -16,24 +15,31 @@ namespace Noctal.ImageLoading;
 public class ImageLoader : IImageLoader
 {
 #if ANDROID
-    public void LoadInto(Activity context, ImageView view, string? urlPath)
+    public void LoadInto(Activity context, IImageLoader.LoadRequest request)
     {
-        InternalLoad(Glide.With(context), view, urlPath);
+        InternalLoad(Glide.With(context), request);
     }
 
-    public void LoadInto(Fragment context, ImageView view, string? urlPath)
+    public void LoadInto(Fragment context, IImageLoader.LoadRequest request)
     {
-        InternalLoad(Glide.With(context), view, urlPath);
+        InternalLoad(Glide.With(context), request);
     }
 
-    public void LoadInto(Context context, ImageView view, string? urlPath)
+    public void LoadInto(Context context, IImageLoader.LoadRequest request)
     {
-        InternalLoad(Glide.With(context), view, urlPath);
+        InternalLoad(Glide.With(context), request);
     }
 
-    private void InternalLoad(RequestManager req, ImageView view, string? urlPath)
+    private void InternalLoad(RequestManager req, IImageLoader.LoadRequest request)
     {
-        req.Load(urlPath).Into(view);
+        var config = req.Load(request.UrlPath);
+
+        if (request.Placeholder is not null)
+        {
+            config = config.Placeholder(request.Placeholder);
+        }
+
+        config.Into(request.View);
     }
 #elif IOS
     public void LoadInto(UIImageView view, string? urlPath)

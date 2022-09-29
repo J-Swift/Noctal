@@ -3,8 +3,11 @@ using Noctal.Stories.Models;
 using ReactiveUI;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Color = Microsoft.Maui.Graphics.Color;
 #if ANDROID
 using Android.Content;
+using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
@@ -120,8 +123,9 @@ internal class MyAdapter : RecyclerView.Adapter
 
     public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
     {
+        var dimImg = parent.Context.ToPixels(StoriesPage.Dims.DimImg);
         var view = CreateView(parent.Context!);
-        return new ViewHolder(view);
+        return new ViewHolder(view, dimImg);
     }
 
     private View CreateView(Context context)
@@ -300,7 +304,15 @@ internal class MyAdapter : RecyclerView.Adapter
 
     private class ViewHolder : RecyclerView.ViewHolder
     {
+        private static readonly IList<Color> BgColors = new[]
+        {
+            Color.FromRgb(143, 144, 161),
+            Color.FromRgb(81, 91, 92),
+            Color.FromRgb(52, 63, 62)
+        };
+
         private readonly View Container;
+        private readonly float DimImg;
         private readonly IImageLoader ImageLoader;
         private readonly ShapeableImageView ImgFavicon;
         private readonly ShapeableImageView ImgImage;
@@ -313,9 +325,10 @@ internal class MyAdapter : RecyclerView.Adapter
         private readonly NoctalLabel LblUrl;
         private Action? OnClick;
 
-        public ViewHolder(View view) : base(view)
+        public ViewHolder(View view, float dimImg) : base(view)
         {
             Container = view;
+            DimImg = dimImg;
             ImgFavicon = view.FindViewById<ShapeableImageView>(ImgFaviconId)!;
             ImgImage = view.FindViewById<ShapeableImageView>(ImgImageId)!;
             LblArticleNumber = view.FindViewById<NoctalLabel>(LblArticleNumberId)!;
@@ -338,12 +351,43 @@ internal class MyAdapter : RecyclerView.Adapter
             LblTimeAgo.Text = model.TimeAgo;
             LblScore.Text = model.Score.ToString();
             LblNumComments.Text = $"{model.NumComments} comment" + (model.NumComments > 1 ? "s" : "");
-            ImageLoader.LoadInto(Container.Context!, ImgImage, model.ImagePath);
-            ImageLoader.LoadInto(Container.Context!, ImgFavicon, model.FavIconPath);
+            ImageLoader.LoadInto(Container.Context!, new IImageLoader.LoadRequest(ImgImage, model.ImagePath, PlaceholderFor(articleNumber, uri)));
+            ImageLoader.LoadInto(Container.Context!, new IImageLoader.LoadRequest(ImgFavicon, model.FavIconPath));
 
             OnClick = onClick;
             Container.Click -= HandleClick;
             Container.Click += HandleClick;
+        }
+
+        // TODO(jpr): cache
+        private Drawable PlaceholderFor(int articleNumber, Uri? uri)
+        {
+            var text = "Y";
+            if (uri is not null)
+            {
+                var parts = uri.Host.Split(".");
+                var x = parts[^2];
+                text = x[0].ToString();
+            }
+
+            var view = new NoctalLabel(Container.Context);
+            view.SetBackgroundColor(BgColors[articleNumber % BgColors.Count].ToPlatform());
+            view.Text = text.ToUpper();
+            view.TextSize = 32;
+            view.Gravity = GravityFlags.Center;
+            view.LayoutParameters = new ViewGroup.LayoutParams((int)DimImg, (int)DimImg);
+            var spec = View.MeasureSpec.MakeMeasureSpec((int)DimImg, MeasureSpecMode.Exactly);
+            view.Measure(spec, spec);
+            view.Layout(0, 0, view.MeasuredWidth, view.MeasuredHeight);
+
+            var bitmap = Bitmap.CreateBitmap(
+                view.Width,
+                view.Height,
+                Bitmap.Config.Argb8888!
+            )!;
+            var canvas = new Canvas(bitmap);
+            view.Draw(canvas);
+            return new BitmapDrawable(Container.Context!.Resources, bitmap);
         }
 
         private void HandleClick(object? sender, System.EventArgs e)

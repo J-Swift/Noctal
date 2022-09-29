@@ -88,14 +88,14 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             {
                 ImgFavicon.Visibility = it == null ? ViewStates.Gone : ViewStates.Visible;
                 var svc = ServiceProvider.GetService<IImageLoader>();
-                svc.LoadInto(this, ImgFavicon, it);
+                svc.LoadInto(this, new IImageLoader.LoadRequest(ImgFavicon, it));
             })
             .DisposeWith(disposables);
         SafeViewModel.WhenAnyValue(vm => vm.Item!.ImagePath)
             .Subscribe(it =>
             {
                 var svc = ServiceProvider.GetService<IImageLoader>();
-                svc.LoadInto(this, ImgImage, it);
+                svc.LoadInto(this, new IImageLoader.LoadRequest(ImgImage, it));
             })
             .DisposeWith(disposables);
     }
