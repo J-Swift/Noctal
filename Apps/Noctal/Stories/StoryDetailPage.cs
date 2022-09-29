@@ -86,6 +86,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         SafeViewModel.WhenAnyValue(vm => vm.Item!.FavIconPath)
             .Subscribe(it =>
             {
+                ImgFavicon.Visibility = it == null ? ViewStates.Gone : ViewStates.Visible;
                 var svc = ServiceProvider.GetService<IImageLoader>();
                 svc.LoadInto(this, ImgFavicon, it);
             })
@@ -141,15 +142,12 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         var shapeModel = new ShapeAppearanceModel().ToBuilder()
             .SetAllCornerSizes(new RelativeCornerSize(0.5f))
             .Build();
-        // var shape = new MaterialShapeDrawable(shapeModel);
-        // shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
         // ImgFavicon = new View(context) { Background = shape };
         ImgFavicon = new ShapeableImageView(context) { ShapeAppearanceModel = shapeModel };
 
         row.AddView(ImgFavicon, new ViewGroup.LayoutParams((int)_dimImgFavicon, (int)_dimImgFavicon));
-
-        addSpacer(row, _dimHPaddingRow);
+        ((LinearLayout.LayoutParams)ImgFavicon.LayoutParameters!).MarginEnd = (int)_dimHPaddingRow;
 
         var lbl = makeLabel();
         LblUrl = lbl;
@@ -265,6 +263,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         SafeViewModel.WhenAnyValue(vm => vm.Item!.FavIconPath)
             .Subscribe(it =>
             {
+                ImgFavicon.Hidden = it == null;
                 var svc = ServiceProvider.GetService<IImageLoader>();
                 svc.LoadInto(ImgFavicon, it);
             })
