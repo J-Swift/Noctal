@@ -305,6 +305,7 @@ internal class MyAdapter : RecyclerView.Adapter
     {
         private static readonly IList<Color> BgColors = new[]
         {
+            Color.FromRgb(149, 176, 214),
             Color.FromRgb(143, 144, 161),
             Color.FromRgb(81, 91, 92),
             Color.FromRgb(52, 63, 62)
@@ -527,6 +528,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
 {
     private static readonly IList<Color> BgColors = new[]
     {
+        Color.FromRgb(149, 176, 214),
         Color.FromRgb(143, 144, 161),
         Color.FromRgb(81, 91, 92),
         Color.FromRgb(52, 63, 62)
@@ -701,7 +703,6 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         });
         return image;
     }
-
 
     public class StoryFeedConfiguration : NSObject, IUIContentConfiguration
     {
