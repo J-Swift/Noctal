@@ -147,12 +147,20 @@ internal class MyAdapter : RecyclerView.Adapter
         // var shape = new MaterialShapeDrawable(shapeModel);
         // shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
-        var img = new ShapeableImageView(context) { Id = ImgImageId, ShapeAppearanceModel = shapeModel };
+        var img = new ShapeableImageView(context)
+        {
+            Id = ImgImageId,
+            ShapeAppearanceModel = shapeModel,
+        };
         img.SetScaleType(ImageView.ScaleType.CenterCrop);
 
         container.AddView(img);
 
-        var sv = new LinearLayout(context) { Orientation = Orientation.Vertical, Id = 18310 };
+        var sv = new LinearLayout(context)
+        {
+            Orientation = Orientation.Vertical,
+            Id = 18310,
+        };
         container.AddView(sv);
 
         // Url Row
@@ -172,7 +180,11 @@ internal class MyAdapter : RecyclerView.Adapter
         // shape = new MaterialShapeDrawable(shapeModel);
         // shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
-        var imgFavicon = new ShapeableImageView(context) { Id = ImgFaviconId, ShapeAppearanceModel = shapeModel };
+        var imgFavicon = new ShapeableImageView(context)
+        {
+            Id = ImgFaviconId,
+            ShapeAppearanceModel = shapeModel,
+        };
         row.AddView(imgFavicon, new ViewGroup.LayoutParams((int)dimImgFavicon, (int)dimImgFavicon));
 
         spacer = new View(context);
@@ -209,7 +221,11 @@ internal class MyAdapter : RecyclerView.Adapter
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context) { Id = LblTimeAgoId, Text = "•" };
+        tv = new NoctalLabel(context)
+        {
+            Id = LblTimeAgoId,
+            Text = "•",
+        };
         row.AddView(tv);
 
         spacer = new View(context);
@@ -232,7 +248,11 @@ internal class MyAdapter : RecyclerView.Adapter
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context) { Id = LblNumCommentsId, Text = "•" };
+        tv = new NoctalLabel(context)
+        {
+            Id = LblNumCommentsId,
+            Text = "•",
+        };
         row.AddView(tv);
 
         spacer = new View(context);
@@ -308,7 +328,7 @@ internal class MyAdapter : RecyclerView.Adapter
             Color.FromRgb(149, 176, 214),
             Color.FromRgb(143, 144, 161),
             Color.FromRgb(81, 91, 92),
-            Color.FromRgb(52, 63, 62)
+            Color.FromRgb(52, 63, 62),
         };
 
         private readonly View Container;
@@ -363,6 +383,7 @@ internal class MyAdapter : RecyclerView.Adapter
         {
             var view = new NoctalLabel(Container.Context);
             view.SetBackgroundColor(BgColors[articleNumber % BgColors.Count].ToPlatform());
+            view.SetTextColor(Colors.White.ToPlatform());
             view.Text = letter.ToUpper();
             view.TextSize = 32;
             view.Gravity = GravityFlags.Center;
@@ -413,7 +434,7 @@ public partial class StoriesPage : IUICollectionViewDelegate
                     var snapshot = DataSource.Snapshot;
                     snapshot.ReconfigureItems(new NSNumber[]
                     {
-                        item.Id
+                        item.Id,
                     });
                     DataSource.ApplySnapshot(snapshot, true);
                 }
@@ -423,7 +444,7 @@ public partial class StoriesPage : IUICollectionViewDelegate
                     var snapshot = new NSDiffableDataSourceSnapshot<NSNumber, NSNumber>();
                     snapshot.AppendSections(new NSNumber[]
                     {
-                        1
+                        1,
                     });
                     snapshot.AppendItems(items.Select(it => (NSNumber)it.Id).ToArray(), 1);
                     DataSource.ApplySnapshot(snapshot, true);
@@ -469,7 +490,7 @@ public partial class StoriesPage : IUICollectionViewDelegate
                     Score = tItem.Score,
                     NumComments = tItem.NumComments,
                     ImagePath = tItem.ImagePath,
-                    FavIconPath = tItem.FavIconPath
+                    FavIconPath = tItem.FavIconPath,
                 };
                 cell.ContentConfiguration = contentConfig;
 
@@ -524,7 +545,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         Color.FromRgb(149, 176, 214),
         Color.FromRgb(143, 144, 161),
         Color.FromRgb(81, 91, 92),
-        Color.FromRgb(52, 63, 62)
+        Color.FromRgb(52, 63, 62),
     };
 
     private readonly IImageLoader ImageLoader;
@@ -548,22 +569,44 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         var makeLabel = () => new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false };
 
         // ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
-        ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill };
+        ImgImage = new UIImageView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            ClipsToBounds = true,
+            ContentMode = UIViewContentMode.ScaleAspectFill,
+        };
         ImgImage.Layer.CornerRadius = (nfloat)StoriesPage.Dims.DimImgRadius;
         AddSubview(ImgImage);
 
-        var sv = new UIStackView { TranslatesAutoresizingMaskIntoConstraints = false, Axis = UILayoutConstraintAxis.Vertical, Alignment = UIStackViewAlignment.Leading, Spacing = (nfloat)StoriesPage.Dims.DimVPadding };
+        var sv = new UIStackView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Axis = UILayoutConstraintAxis.Vertical,
+            Alignment = UIStackViewAlignment.Leading,
+            Spacing = (nfloat)StoriesPage.Dims.DimVPadding,
+        };
         AddSubview(sv);
 
         // Url Row
 
-        var row = new UIStackView { TranslatesAutoresizingMaskIntoConstraints = false, Axis = UILayoutConstraintAxis.Horizontal, Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow };
+        var row = new UIStackView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Axis = UILayoutConstraintAxis.Horizontal,
+            Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow,
+        };
 
         var lbl = makeLabel();
         LblArticleNumber = lbl;
         row.AddArrangedSubview(lbl);
 
-        ImgFavicon = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
+        ImgFavicon = new UIImageView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            ClipsToBounds = true,
+            ContentMode = UIViewContentMode.ScaleAspectFill,
+            BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform(),
+        };
         ImgFavicon.HeightAnchor.ConstraintEqualTo((NFloat)StoriesPage.Dims.DimImgFavicon).Active = true;
         ImgFavicon.WidthAnchor.ConstraintEqualTo(ImgFavicon.HeightAnchor).Active = true;
         ImgFavicon.Layer.CornerRadius = (NFloat)(StoriesPage.Dims.DimImgFavicon / 2.0);
@@ -585,7 +628,12 @@ internal sealed class StoryFeedView : UIView, IUIContentView
 
         // Author Row
 
-        row = new UIStackView { TranslatesAutoresizingMaskIntoConstraints = false, Axis = UILayoutConstraintAxis.Horizontal, Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow };
+        row = new UIStackView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Axis = UILayoutConstraintAxis.Horizontal,
+            Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow,
+        };
 
         lbl = makeLabel();
         LblAuthor = lbl;
@@ -603,7 +651,12 @@ internal sealed class StoryFeedView : UIView, IUIContentView
 
         // Score Row
 
-        row = new UIStackView { TranslatesAutoresizingMaskIntoConstraints = false, Axis = UILayoutConstraintAxis.Horizontal, Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow };
+        row = new UIStackView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Axis = UILayoutConstraintAxis.Horizontal,
+            Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow,
+        };
 
         lbl = makeLabel();
         LblScore = lbl;
@@ -619,7 +672,11 @@ internal sealed class StoryFeedView : UIView, IUIContentView
 
         sv.AddArrangedSubview(row);
 
-        var separator = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, BackgroundColor = UIColor.OpaqueSeparator };
+        var separator = new UIView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            BackgroundColor = UIColor.OpaqueSeparator,
+        };
         AddSubview(separator);
 
         NSLayoutConstraint.ActivateConstraints(new[]
@@ -638,7 +695,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
             sv.LeadingAnchor.ConstraintEqualTo(ImgImage.TrailingAnchor, (nfloat)StoriesPage.Dims.DimHPadding),
             sv.TrailingAnchor.ConstraintEqualTo(TrailingAnchor, -(nfloat)StoriesPage.Dims.DimHPadding),
             sv.TopAnchor.ConstraintEqualTo(TopAnchor, (nfloat)StoriesPage.Dims.DimVPadding),
-            sv.BottomAnchor.ConstraintEqualTo(separator.TopAnchor, -(nfloat)StoriesPage.Dims.DimVPadding)
+            sv.BottomAnchor.ConstraintEqualTo(separator.TopAnchor, -(nfloat)StoriesPage.Dims.DimVPadding),
         });
 
         updateConfiguration(configuration);
@@ -675,6 +732,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
     {
         var view = new NoctalLabel();
         view.BackgroundColor = BgColors[articleNumber % BgColors.Count].ToPlatform();
+        view.TextColor = Colors.White.ToPlatform();
         view.Text = letter.ToUpper();
         view.Font = view.Font.WithSize(32);
         view.TextAlignment = UITextAlignment.Center;
@@ -719,7 +777,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
                 NumComments = NumComments,
                 FavIconPath = FavIconPath,
                 ImagePath = ImagePath,
-                DimImg = DimImg
+                DimImg = DimImg,
             };
         }
 
