@@ -343,15 +343,14 @@ internal class MyAdapter : RecyclerView.Adapter
 
         public void Bind(int articleNumber, StoriesFeedItem model, Action onClick)
         {
-            Uri.TryCreate(model.Url, UriKind.Absolute, out var uri);
             LblArticleNumber.Text = $"{articleNumber}.";
-            LblUrl.Text = uri?.Host ?? " ";
+            LblUrl.Text = model.DisplayUrl ?? " ";
             LblTitle.Text = model.Title;
             LblAuthor.Text = model.Submitter;
             LblTimeAgo.Text = model.TimeAgo;
             LblScore.Text = model.Score.ToString();
             LblNumComments.Text = $"{model.NumComments} comment" + (model.NumComments > 1 ? "s" : "");
-            ImageLoader.LoadInto(Container.Context!, new IImageLoader.LoadRequest(ImgImage, model.ImagePath, PlaceholderFor(articleNumber, uri)));
+            ImageLoader.LoadInto(Container.Context!, new IImageLoader.LoadRequest(ImgImage, model.ImagePath, PlaceholderFor(articleNumber, model.PlaceholderLetter ?? "Y")));
             ImageLoader.LoadInto(Container.Context!, new IImageLoader.LoadRequest(ImgFavicon, model.FavIconPath));
 
             OnClick = onClick;
@@ -360,19 +359,11 @@ internal class MyAdapter : RecyclerView.Adapter
         }
 
         // TODO(jpr): cache
-        private Drawable PlaceholderFor(int articleNumber, Uri? uri)
+        private Drawable PlaceholderFor(int articleNumber, string letter)
         {
-            var text = "Y";
-            if (uri is not null)
-            {
-                var parts = uri.Host.Split(".");
-                var x = parts[^2];
-                text = x[0].ToString();
-            }
-
             var view = new NoctalLabel(Container.Context);
             view.SetBackgroundColor(BgColors[articleNumber % BgColors.Count].ToPlatform());
-            view.Text = text.ToUpper();
+            view.Text = letter.ToUpper();
             view.TextSize = 32;
             view.Gravity = GravityFlags.Center;
             view.LayoutParameters = new ViewGroup.LayoutParams((int)DimImg, (int)DimImg);
@@ -470,6 +461,8 @@ public partial class StoriesPage : IUICollectionViewDelegate
                     DimImg = (int)Dims.DimImg,
                     ItemNumber = indexPath.Row + 1,
                     Url = tItem.Url,
+                    DisplayUrl = tItem.DisplayUrl,
+                    PlaceholderLetter = tItem.PlaceholderLetter,
                     Title = tItem.Title,
                     Submitter = tItem.Submitter,
                     TimeAgo = tItem.TimeAgo,
@@ -665,33 +658,24 @@ internal sealed class StoryFeedView : UIView, IUIContentView
     {
         if (weakConfig is StoryFeedConfiguration config)
         {
-            Uri.TryCreate(config.Url, UriKind.Absolute, out var uri);
             LblArticleNumber.Text = $"{config.ItemNumber}.";
-            LblUrl.Text = uri?.Host ?? " ";
+            LblUrl.Text = config.DisplayUrl ?? " ";
             LblTitle.Text = config.Title;
             LblAuthor.Text = config.Submitter;
             LblTimeAgo.Text = config.TimeAgo;
             LblScore.Text = config.Score.ToString();
             LblNumComments.Text = $"{config.NumComments} comment" + (config.NumComments > 1 ? "s" : "");
-            ImageLoader.LoadInto(new IImageLoader.LoadRequest(ImgImage, config.ImagePath, PlaceholderFor(config.DimImg, config.ItemNumber, uri)));
+            ImageLoader.LoadInto(new IImageLoader.LoadRequest(ImgImage, config.ImagePath, PlaceholderFor(config.DimImg, config.ItemNumber, config.PlaceholderLetter ?? "Y")));
             ImageLoader.LoadInto(new IImageLoader.LoadRequest(ImgFavicon, config.FavIconPath));
         }
     }
 
     // TODO(jpr): cache
-    private UIImage PlaceholderFor(int dimImg, int articleNumber, Uri? uri)
+    private UIImage PlaceholderFor(int dimImg, int articleNumber, string letter)
     {
-        var text = "Y";
-        if (uri is not null)
-        {
-            var parts = uri.Host.Split(".");
-            var x = parts[^2];
-            text = x[0].ToString();
-        }
-
         var view = new NoctalLabel();
         view.BackgroundColor = BgColors[articleNumber % BgColors.Count].ToPlatform();
-        view.Text = text.ToUpper();
+        view.Text = letter.ToUpper();
         view.Font = view.Font.WithSize(32);
         view.TextAlignment = UITextAlignment.Center;
         view.Frame = new CGRect(0, 0, dimImg, dimImg);
@@ -708,6 +692,8 @@ internal sealed class StoryFeedView : UIView, IUIContentView
     {
         public int ItemNumber { get; set; } = 1;
         public string Url { get; set; } = "";
+        public string? DisplayUrl { get; set; }
+        public string? PlaceholderLetter { get; set; }
         public string Title { get; set; } = "";
         public string Submitter { get; set; } = "";
         public string TimeAgo { get; set; } = "";
@@ -724,6 +710,8 @@ internal sealed class StoryFeedView : UIView, IUIContentView
             {
                 ItemNumber = ItemNumber,
                 Url = Url,
+                DisplayUrl = DisplayUrl,
+                PlaceholderLetter = PlaceholderLetter,
                 Title = Title,
                 Submitter = Submitter,
                 TimeAgo = TimeAgo,
