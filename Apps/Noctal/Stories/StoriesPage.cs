@@ -1,24 +1,27 @@
 #if ANDROID
 using Color = Microsoft.Maui.Graphics.Color;
 using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.App;
 using AndroidX.ConstraintLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 using Google.Android.Material.Shape;
 using Google.Android.Material.ImageView;
-using Noctal.ImageLoading;
+using Orientation = Android.Widget.Orientation;
 #elif IOS
 using CoreGraphics;
 using Foundation;
-using Noctal.ImageLoading;
+using Noctal.UI.Theming;
 using ObjCRuntime;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 #endif
 using DynamicData.Binding;
+using Noctal.ImageLoading;
 using Noctal.Stories.Models;
 using ReactiveUI;
 using System.Reactive.Disposables;
@@ -47,6 +50,12 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
         public static readonly double DimHPadding = 20;
 
         public static readonly double DimEstimatedCellHeight = 160;
+    }
+
+    public static class Styling
+    {
+        public static readonly Color CellHighlightLt = Color.FromRgb(180, 215, 250);
+        public static readonly Color CellHighlightDk = Color.FromRgb(28, 104, 185);
     }
 }
 
@@ -139,13 +148,28 @@ internal class MyAdapter : RecyclerView.Adapter
         var dimHSpacerPs = new LinearLayout.LayoutParams((int)dimHPaddingRow, 1);
         var parent = ConstraintLayout.LayoutParams.ParentId;
 
+        var isNight = AppCompatDelegate.DefaultNightMode == AppCompatDelegate.ModeNightYes;
+
+        var csl = new ColorStateList(new[]
+            {
+                new int[]
+                {
+                    Android.Resource.Attribute.StatePressed,
+                },
+                Array.Empty<int>(),
+            },
+            new int[]
+            {
+                (isNight ? StoriesPage.Styling.CellHighlightDk : StoriesPage.Styling.CellHighlightLt).ToPlatform(),
+                Android.Resource.Color.Transparent,
+            });
+
         var container = new ConstraintLayout(context);
+        container.Background = new ColorStateListDrawable(csl);
 
         var shapeModel = new ShapeAppearanceModel().ToBuilder()
             .SetAllCorners(CornerFamily.Rounded, dimImgRadius)
             .Build();
-        // var shape = new MaterialShapeDrawable(shapeModel);
-        // shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
         var img = new ShapeableImageView(context)
         {
@@ -165,10 +189,16 @@ internal class MyAdapter : RecyclerView.Adapter
 
         // Url Row
 
-        var row = new LinearLayout(context) { Orientation = Orientation.Horizontal };
+        var row = new LinearLayout(context)
+        {
+            Orientation = Orientation.Horizontal,
+        };
         row.SetVerticalGravity(GravityFlags.Center);
 
-        var tv = new NoctalLabel(context) { Id = LblArticleNumberId };
+        var tv = new NoctalLabel(context)
+        {
+            Id = LblArticleNumberId,
+        };
         row.AddView(tv);
 
         var spacer = new View(context);
@@ -177,8 +207,6 @@ internal class MyAdapter : RecyclerView.Adapter
         shapeModel = new ShapeAppearanceModel().ToBuilder()
             .SetAllCornerSizes(new RelativeCornerSize(0.5f))
             .Build();
-        // shape = new MaterialShapeDrawable(shapeModel);
-        // shape.FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList();
 
         var imgFavicon = new ShapeableImageView(context)
         {
@@ -190,7 +218,10 @@ internal class MyAdapter : RecyclerView.Adapter
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context) { Id = LblUrlId };
+        tv = new NoctalLabel(context)
+        {
+            Id = LblUrlId,
+        };
         tv.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.Uniform);
         tv.SetMaxLines(1);
         row.AddView(tv);
@@ -199,7 +230,10 @@ internal class MyAdapter : RecyclerView.Adapter
 
         // Title Row
 
-        tv = new NoctalLabel(context) { Id = LblTitleId };
+        tv = new NoctalLabel(context)
+        {
+            Id = LblTitleId,
+        };
 
         spacer = new View(context);
         sv.AddView(spacer, dimVSpacerPs);
@@ -207,15 +241,24 @@ internal class MyAdapter : RecyclerView.Adapter
 
         // Author Row
 
-        row = new LinearLayout(context) { Orientation = Orientation.Horizontal };
+        row = new LinearLayout(context)
+        {
+            Orientation = Orientation.Horizontal,
+        };
 
-        tv = new NoctalLabel(context) { Id = LblAuthorId };
+        tv = new NoctalLabel(context)
+        {
+            Id = LblAuthorId,
+        };
         row.AddView(tv);
 
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context) { Text = "•" };
+        tv = new NoctalLabel(context)
+        {
+            Text = "•",
+        };
         row.AddView(tv);
 
         spacer = new View(context);
@@ -234,15 +277,24 @@ internal class MyAdapter : RecyclerView.Adapter
 
         // Score Row
 
-        row = new LinearLayout(context) { Orientation = Orientation.Horizontal };
+        row = new LinearLayout(context)
+        {
+            Orientation = Orientation.Horizontal,
+        };
 
-        tv = new NoctalLabel(context) { Id = LblScoreId };
+        tv = new NoctalLabel(context)
+        {
+            Id = LblScoreId,
+        };
         row.AddView(tv);
 
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context) { Text = "•" };
+        tv = new NoctalLabel(context)
+        {
+            Text = "•",
+        };
         row.AddView(tv);
 
         spacer = new View(context);
@@ -471,7 +523,10 @@ public partial class StoriesPage : IUICollectionViewDelegate
 
         var layout = new UICollectionViewCompositionalLayout(section);
 
-        Feed = new UICollectionView(CGRect.Empty, layout) { Delegate = this };
+        Feed = new UICollectionView(CGRect.Empty, layout)
+        {
+            Delegate = this,
+        };
 
         var cellReg = UICollectionViewCellRegistration.GetRegistration(typeof(UICollectionViewCell),
             (cell, indexPath, item) =>
@@ -500,7 +555,7 @@ public partial class StoriesPage : IUICollectionViewDelegate
                     var state = cell.ConfigurationState;
                     if (state.Highlighted || state.Selected)
                     {
-                        return UIColor.SystemGray3;
+                        return ColorUtils.Adaptive(Styling.CellHighlightLt, Styling.CellHighlightDk);
                     }
 
                     return UIColor.Clear;
@@ -566,7 +621,10 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         ImageLoader = ServiceProvider.GetService<IImageLoader>();
         _configuration = configuration;
 
-        var makeLabel = () => new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false };
+        var makeLabel = () => new NoctalLabel
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+        };
 
         // ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
         ImgImage = new UIImageView
