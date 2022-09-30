@@ -8,6 +8,12 @@ public class MetaFetcher : IMetaFetcher
 {
     private const int BytesToRead = 2000;
 
+    private static readonly Dictionary<string, int> FavIconScoreMappings = new()
+    {
+        { "apple-touch-icon", 20 },
+        { "shortcut icon", 10 },
+    };
+
     public async Task<MetaResult> GetMeta(string urlPath)
     {
         var result = new MetaResult(null, null);
@@ -41,27 +47,36 @@ public class MetaFetcher : IMetaFetcher
                             keepGoing = parser.Parse(partialHtml) && bytesRead > 0;
                         }
 
+                        var favIconScore = -1;
                         foreach (var parserResult in parser.GetResults())
                         {
                             switch (parserResult)
                             {
                                 case MetaParser.OgImageResult og:
-                                    if (og.OgProperty.ToLowerInvariant() == "og:image")
                                     {
                                         var fullUrl = new Uri(url, og.UrlPath);
-                                        result = result with { OgImagePath = fullUrl.ToString() };
-                                    }
 
-                                    break;
+                                        if (og.OgProperty.ToLowerInvariant() == "og:image")
+                                        {
+                                            result = result with { OgImagePath = fullUrl.ToString() };
+                                        }
+
+                                        break;
+                                    }
                                 case MetaParser.FaviconResult favIcon:
-                                    // TODO(jpr): icon priority
-                                    if (favIcon.IconType.ToLowerInvariant() == "apple-touch-icon")
                                     {
-                                        var fullUrl = new Uri(url, favIcon.UrlPath);
-                                        result = result with { FavIconPath = fullUrl.ToString() };
-                                    }
+                                        if (FavIconScoreMappings.TryGetValue(favIcon.IconType.ToLowerInvariant(), out var score))
+                                        {
+                                            if (score > favIconScore)
+                                            {
+                                                favIconScore = score;
+                                                var fullUrl = new Uri(url, favIcon.UrlPath);
+                                                result = result with { FavIconPath = fullUrl.ToString() };
+                                            }
+                                        }
 
-                                    break;
+                                        break;
+                                    }
                             }
                         }
 
