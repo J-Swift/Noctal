@@ -7,9 +7,19 @@ public record StoriesFeedItem(int Id, string Url, string Title, string Submitter
 
     private static string? GetDisplayUrl(string url)
     {
-        Uri.TryCreate(url, UriKind.Absolute, out var uri);
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            return null;
+        }
 
-        return uri?.Host;
+        var host = uri.Host;
+
+        if (host.StartsWith("www."))
+        {
+            host = host[4..];
+        }
+
+        return host;
     }
 
     private static string? GetPlaceholderLetter(string url)
