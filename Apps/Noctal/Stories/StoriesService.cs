@@ -72,9 +72,15 @@ public class StoriesService
 
     private StoriesFeedItem ItemFrom(Story story)
     {
+        var urlPath = story.UrlPath;
+        if (urlPath is null)
+        {
+            urlPath = story.TypeOfStory == StoryType.AskHn ? "https://news.ycombinator.com" : "<unknown>";
+        }
+
         return new StoriesFeedItem(
             int.Parse(story.Id),
-            story.UrlPath,
+            urlPath,
             story.Title,
             story.Author,
             ToTimeAgo(story.CreatedAt),

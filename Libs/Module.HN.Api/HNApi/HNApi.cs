@@ -22,6 +22,16 @@ public class HNApi : IHNApi
 
     private Story StoryFrom(StoryDto dto)
     {
+        var storyType = StoryType.Story;
+        if (dto._tags.Contains("ask_hn"))
+        {
+            storyType = StoryType.AskHn;
+        }
+        else if (dto._tags.Contains("show_hn"))
+        {
+            storyType = StoryType.ShowHn;
+        }
+
         return new Story(
             dto.objectID,
             dto.title,
@@ -29,7 +39,8 @@ public class HNApi : IHNApi
             dto.url,
             DateTimeOffset.Parse(dto.created_at),
             dto.points,
-            dto.num_comments
+            dto.num_comments,
+            storyType
         );
     }
 }
@@ -50,4 +61,5 @@ internal class StoryDto
     public int points { get; set; }
     public string title { get; set; }
     public string url { get; set; }
+    public IList<string> _tags { get; set; }
 }
