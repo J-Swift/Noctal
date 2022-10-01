@@ -56,7 +56,11 @@ public class StoriesService
                 {
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        _storiesCache.AddOrUpdate(item with { ImagePath = res.OgImagePath, FavIconPath = res.FavIconPath });
+                        _storiesCache.AddOrUpdate(item with
+                        {
+                            ImagePath = res.OgImagePath,
+                            FavIconPath = res.FavIconPath,
+                        });
                     });
                 }
             );

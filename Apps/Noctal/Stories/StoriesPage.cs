@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
+using Android.Text;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
@@ -249,7 +250,9 @@ internal class MyAdapter : RecyclerView.Adapter
         tv = new NoctalLabel(context)
         {
             Id = LblAuthorId,
+            Ellipsize = TextUtils.TruncateAt.End,
         };
+        tv.SetMaxLines(1);
         row.AddView(tv);
 
         spacer = new View(context);
@@ -267,8 +270,9 @@ internal class MyAdapter : RecyclerView.Adapter
         tv = new NoctalLabel(context)
         {
             Id = LblTimeAgoId,
-            Text = "•",
+            Ellipsize = TextUtils.TruncateAt.End,
         };
+        tv.SetMaxLines(1);
         row.AddView(tv);
 
         spacer = new View(context);
@@ -694,14 +698,17 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         };
 
         lbl = makeLabel();
+        lbl.SetContentCompressionResistancePriority((float)UILayoutPriority.DefaultHigh, UILayoutConstraintAxis.Horizontal);
         LblAuthor = lbl;
         row.AddArrangedSubview(lbl);
 
         lbl = makeLabel();
+        lbl.SetContentCompressionResistancePriority((float)UILayoutPriority.SceneSizeStayPut, UILayoutConstraintAxis.Horizontal);
         lbl.Text = "•";
         row.AddArrangedSubview(lbl);
 
         lbl = makeLabel();
+        lbl.SetContentCompressionResistancePriority((float)UILayoutPriority.DefaultLow, UILayoutConstraintAxis.Horizontal);
         LblTimeAgo = lbl;
         row.AddArrangedSubview(lbl);
 
