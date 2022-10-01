@@ -61,6 +61,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private NoctalLabel LblTimeAgo { get; set; } = null!;
     private ImageView ImgFavicon { get; set; } = null!;
     private ImageView ImgImage { get; set; } = null!;
+    private ViewGroup ImgImageWrapper { get; set; } = null!;
 
     public static (int DestId, Bundle DestArgs) SafeNav(NavController nav, int storyId)
     {
@@ -98,6 +99,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         SafeViewModel.WhenAnyValue(vm => vm.Item!.ImagePath)
             .Subscribe(it =>
             {
+                ImgImageWrapper.Visibility = it == null ? ViewStates.Gone : ViewStates.Visible;
                 var svc = ServiceProvider.GetService<IImageLoader>();
                 svc.LoadInto(this, new IImageLoader.LoadRequest(ImgImage, it));
             })
@@ -193,7 +195,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         addSpacer(sv, _dimVPadding);
 
-        var imgWrapper = new ConstraintLayout(context);
+        ImgImageWrapper = new ConstraintLayout(context);
         var parentId = ConstraintLayout.LayoutParams.ParentId;
         var ps = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ConstraintLayout.LayoutParams.MatchConstraint)
         {
@@ -203,9 +205,10 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             TopToTop = parentId,
             BottomToBottom = parentId,
         };
-        imgWrapper.AddView(ImgImage, ps);
+        ImgImageWrapper.AddView(ImgImage, ps);
 
-        sv.AddView(imgWrapper, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
+        sv.AddView(ImgImageWrapper, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
+        ((LinearLayout.LayoutParams)ImgImageWrapper.LayoutParameters!).BottomMargin = (int)_dimVPadding;
 
         // Author Row
 
@@ -239,7 +242,6 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         LblTimeAgo = lbl;
         row.AddView(lbl);
 
-        addSpacer(sv, _dimVPadding);
         sv.AddView(row);
 
         return scroll;
@@ -284,6 +286,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         SafeViewModel.WhenAnyValue(vm => vm.Item!.ImagePath)
             .Subscribe(it =>
             {
+                ImgImage.Hidden = it == null;
                 var svc = ServiceProvider.GetService<IImageLoader>();
                 svc.LoadInto(new IImageLoader.LoadRequest(ImgImage, it));
             })
