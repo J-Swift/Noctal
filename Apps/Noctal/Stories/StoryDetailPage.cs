@@ -388,7 +388,6 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         row.AddArrangedSubview(lbl);
 
         sv.AddArrangedSubview(row);
-        ;
 
         var svWrapper = new UIView
         {

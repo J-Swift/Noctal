@@ -83,20 +83,26 @@ class MyObserver<T> : Java.Lang.Object, IDefaultLifecycleObserver, ILifecycleObs
 public class StoriesCoordinator : BaseCoordinator
 {
     public UIViewController RootPage => Nav;
-    private readonly UINavigationController Nav = new UINavigationController();
+    private readonly UINavigationController Nav = new();
 
     public override async Task Start()
     {
         await Task.Delay(0);
 
-        var page = new StoriesPage { Title = "Stories" };
+        var page = new StoriesPage
+        {
+            Title = "Stories",
+        };
         page.OnItemSelected += OnItemSelected;
         Nav.PushViewController(page, true);
     }
 
     private void OnItemSelected(object? sender, StoriesPage.EventArgs e)
     {
-        var page = new StoryDetailPage(e.SelectedItem.Id);
+        var page = new StoryDetailPage(e.SelectedItem.Id)
+        {
+            Title = "Comments",
+        };
         Nav.PushViewController(page, true);
     }
 }
