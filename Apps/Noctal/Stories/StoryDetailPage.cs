@@ -1,8 +1,10 @@
 using Noctal.ImageLoading;
+using Noctal.UI.Theming;
 using ReactiveUI;
 using System.Reactive.Disposables;
 
 #if ANDROID
+using AndroidX.AppCompat.App;
 using Android.Content;
 using Android.OS;
 using Android.Views;
@@ -27,14 +29,22 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         return new StoryDetailViewModel(StoryId, ServiceProvider.GetService<StoriesService>());
     }
 
-    public static class Dims
+    internal static class Dims
     {
         public static readonly double DimImgFavicon = 16;
         public static readonly double DimImgHeightRatio = 0.6;
         public static readonly double DimImgRadius = 4;
+
         public static readonly double DimVPadding = 16;
+
         public static readonly double DimHPaddingRow = 4;
         public static readonly double DimHPadding = 20;
+    }
+
+    internal static class Styling
+    {
+        public static readonly double FontSizeDefault = 17;
+        public static readonly double FontSizeTitle = 20;
     }
 }
 
@@ -102,7 +112,12 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         var _dimHPaddingRow = context.ToPixels(Dims.DimHPaddingRow);
         var _dimHPadding = context.ToPixels(Dims.DimHPadding);
 
-        var makeLabel = () => new NoctalLabel(context);
+        var isNight = AppCompatDelegate.DefaultNightMode == AppCompatDelegate.ModeNightYes;
+
+        var makeLabel = () => new NoctalLabel(context)
+        {
+            TextSize = (float)Styling.FontSizeDefault,
+        };
         var makeRow = () => new LinearLayout(context)
         {
             Orientation = Orientation.Horizontal,
@@ -126,11 +141,15 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         var scroll = new ScrollView(context);
 
-        var sv = new LinearLayout(context) { Orientation = Orientation.Vertical };
+        var sv = new LinearLayout(context)
+        {
+            Orientation = Orientation.Vertical,
+        };
         sv.SetPaddingRelative((int)_dimHPadding, end: (int)_dimHPadding, top: 0, bottom: 0);
         scroll.AddView(sv, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
 
         LblTitle = makeLabel();
+        LblTitle.TextSize = (float)Styling.FontSizeTitle;
         sv.AddView(LblTitle);
 
         // Url Row
@@ -142,12 +161,16 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             .Build();
 
         // ImgFavicon = new View(context) { Background = shape };
-        ImgFavicon = new ShapeableImageView(context) { ShapeAppearanceModel = shapeModel };
+        ImgFavicon = new ShapeableImageView(context)
+        {
+            ShapeAppearanceModel = shapeModel,
+        };
 
         row.AddView(ImgFavicon, new ViewGroup.LayoutParams((int)_dimImgFavicon, (int)_dimImgFavicon));
         ((LinearLayout.LayoutParams)ImgFavicon.LayoutParameters!).MarginEnd = (int)_dimHPaddingRow;
 
         var lbl = makeLabel();
+        lbl.SetTextColor((isNight ? new DarkTheme() as ITheme : new LightTheme() as ITheme).PrimaryColor.ToPlatform());
         LblUrl = lbl;
         row.AddView(lbl);
 
@@ -162,7 +185,10 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         // var shape = new MaterialShapeDrawable(shapeModel) { FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList() };
 
         // ImgImage = new ImageView(context) { Background = shape };
-        ImgImage = new ShapeableImageView(context) { ShapeAppearanceModel = shapeModel };
+        ImgImage = new ShapeableImageView(context)
+        {
+            ShapeAppearanceModel = shapeModel,
+        };
         ImgImage.SetScaleType(ImageView.ScaleType.CenterCrop);
 
         addSpacer(sv, _dimVPadding);
@@ -266,7 +292,15 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
     protected override UIView CreateView()
     {
-        var makeLabel = () => new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false };
+        var makeLabel = () =>
+        {
+            var lbl = new NoctalLabel
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+            };
+            lbl.Font = lbl.Font.WithSize((nfloat)Styling.FontSizeDefault);
+            return lbl;
+        };
         var makeRow = () => new UIStackView
         {
             TranslatesAutoresizingMaskIntoConstraints = false,
@@ -274,7 +308,10 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow,
         };
 
-        var scroll = new UIScrollView { BackgroundColor = SceneDelegate.Theme.BackgroundColor };
+        var scroll = new UIScrollView
+        {
+            BackgroundColor = SceneDelegate.Theme.BackgroundColor,
+        };
 
         var sv = new UIStackView
         {
@@ -285,6 +322,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         };
 
         LblTitle = makeLabel();
+        LblTitle.Font = LblTitle.Font.WithSize((nfloat)StoriesPage.Styling.FontSizeTitle);
         LblTitle.Lines = 0;
         sv.AddArrangedSubview(LblTitle);
 
@@ -306,6 +344,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         var lbl = makeLabel();
         LblUrl = lbl;
+        lbl.TextColor = SceneDelegate.Theme.PrimaryColor;
         row.AddArrangedSubview(lbl);
 
         sv.AddArrangedSubview(row);
@@ -351,7 +390,10 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         sv.AddArrangedSubview(row);
         ;
 
-        var svWrapper = new UIView { TranslatesAutoresizingMaskIntoConstraints = false };
+        var svWrapper = new UIView
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+        };
         svWrapper.AddSubview(sv);
         scroll.AddSubview(svWrapper);
 

@@ -41,7 +41,7 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
 
     public record EventArgs(StoriesFeedItem SelectedItem);
 
-    public static class Dims
+    internal static class Dims
     {
         public static readonly double DimImg = 70;
         public static readonly double DimImgFavicon = 16;
@@ -53,7 +53,7 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
         public static readonly double DimEstimatedCellHeight = 160;
     }
 
-    public static class Styling
+    internal static class Styling
     {
         public static readonly Color CellHighlightLt = Color.FromRgb(180, 215, 250);
         public static readonly Color CellHighlightDk = Color.FromRgb(28, 104, 185);
