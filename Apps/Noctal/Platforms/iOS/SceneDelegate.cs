@@ -17,7 +17,10 @@ public class SceneDelegate : UIWindowSceneDelegate
             Theme = new AdaptiveTheme(new LightTheme(), new DarkTheme(), false);
             ApplyTheme();
 
-            Window = new UIWindow(windowScene) { BackgroundColor = Theme.BackgroundColor };
+            Window = new UIWindow(windowScene)
+            {
+                BackgroundColor = Theme.BackgroundColor,
+            };
             var appCoordinator = new ApplicationCoordinator();
 
             Window.RootViewController = appCoordinator.RootView;
@@ -32,8 +35,12 @@ public class SceneDelegate : UIWindowSceneDelegate
     {
         var navigationBarAppearance = new UINavigationBarAppearance();
         navigationBarAppearance.BackgroundColor = Theme.BackgroundColor;
-        navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = Theme.OnBackgroundColor };
+        navigationBarAppearance.TitleTextAttributes = new UIStringAttributes()
+        {
+            ForegroundColor = Theme.OnBackgroundColor,
+        };
         UINavigationBar.Appearance.StandardAppearance = UINavigationBar.Appearance.ScrollEdgeAppearance = navigationBarAppearance;
+        UINavigationBar.Appearance.TintColor = Theme.OnBackgroundColor;
         UIApplication.SharedApplication.StatusBarStyle = UIStatusBarStyle.LightContent;
 
         UITabBar.Appearance.SelectedImageTintColor = Theme.PrimaryColor;
