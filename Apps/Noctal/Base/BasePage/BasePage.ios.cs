@@ -3,7 +3,7 @@ using System.Reactive.Disposables;
 
 namespace Noctal;
 
-public abstract class BasePage<TViewModel> : ReactiveUI.ReactiveViewController<TViewModel> where TViewModel : class
+public abstract class BasePage<TViewModel> : ReactiveViewController<TViewModel> where TViewModel : class
 {
     protected abstract TViewModel CreateViewModel();
     protected abstract UIView CreateView();
@@ -11,7 +11,7 @@ public abstract class BasePage<TViewModel> : ReactiveUI.ReactiveViewController<T
 
     protected TViewModel SafeViewModel => ViewModel!;
 
-    public BasePage()
+    protected BasePage()
     {
         this.WhenActivated(disposables =>
         {
