@@ -627,7 +627,6 @@ internal sealed class StoryFeedView : UIView, IUIContentView
             return lbl;
         };
 
-        // ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
         ImgImage = new UIImageView
         {
             TranslatesAutoresizingMaskIntoConstraints = false,
@@ -664,7 +663,6 @@ internal sealed class StoryFeedView : UIView, IUIContentView
             TranslatesAutoresizingMaskIntoConstraints = false,
             ClipsToBounds = true,
             ContentMode = UIViewContentMode.ScaleAspectFill,
-            BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform(),
         };
         ImgFavicon.HeightAnchor.ConstraintEqualTo((NFloat)StoriesPage.Dims.DimImgFavicon).Active = true;
         ImgFavicon.WidthAnchor.ConstraintEqualTo(ImgFavicon.HeightAnchor).Active = true;

@@ -184,9 +184,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         shapeModel = new ShapeAppearanceModel().ToBuilder()
             .SetAllCorners(CornerFamily.Rounded, _dimImgRadius)
             .Build();
-        // var shape = new MaterialShapeDrawable(shapeModel) { FillColor = Colors.Red.WithAlpha(0.3f).ToDefaultColorStateList() };
 
-        // ImgImage = new ImageView(context) { Background = shape };
         ImgImage = new ShapeableImageView(context)
         {
             ShapeAppearanceModel = shapeModel,
@@ -338,7 +336,6 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             TranslatesAutoresizingMaskIntoConstraints = false,
             ClipsToBounds = true,
             ContentMode = UIViewContentMode.ScaleAspectFill,
-            BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform(),
         };
         ImgFavicon.WidthAnchor.ConstraintEqualTo((nfloat)Dims.DimImgFavicon).Active = true;
         ImgFavicon.HeightAnchor.ConstraintEqualTo((nfloat)Dims.DimImgFavicon).Active = true;
@@ -359,7 +356,6 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             TranslatesAutoresizingMaskIntoConstraints = false,
             ClipsToBounds = true,
             ContentMode = UIViewContentMode.ScaleAspectFill,
-            BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform(),
         };
         ImgImage.Layer.CornerRadius = (nfloat)Dims.DimImgRadius;
         sv.AddArrangedSubview(ImgImage);
