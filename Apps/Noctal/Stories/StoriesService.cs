@@ -58,8 +58,7 @@ public class StoriesService
                     {
                         _storiesCache.AddOrUpdate(item with
                         {
-                            ImagePath = res.OgImagePath,
-                            FavIconPath = res.FavIconPath,
+                            ImagePath = res.OgImagePath, FavIconPath = res.FavIconPath,
                         });
                     });
                 }
@@ -112,12 +111,12 @@ public class StoriesService
             return $"{(int)delta.TotalHours}h ago";
         }
 
-        if (delta.TotalDays < 365)
+        if (delta.TotalDays < 7)
         {
             return $"{(int)delta.TotalDays}d ago";
         }
 
-        return $"{(int)(delta.TotalDays / 365)}y ago";
+        return date.ToString("MMMM d, yyyy");
     }
 }
 
