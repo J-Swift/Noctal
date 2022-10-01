@@ -306,7 +306,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         {
             TranslatesAutoresizingMaskIntoConstraints = false,
             Axis = UILayoutConstraintAxis.Horizontal,
-            Spacing = (nfloat)StoriesPage.Dims.DimHPaddingRow,
+            Spacing = (nfloat)Dims.DimHPaddingRow,
         };
 
         var scroll = new UIScrollView
@@ -323,7 +323,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         };
 
         LblTitle = makeLabel();
-        LblTitle.Font = LblTitle.Font.WithSize((nfloat)StoriesPage.Styling.FontSizeTitle);
+        LblTitle.Font = LblTitle.Font.WithSize((nfloat)Styling.FontSizeTitle);
         LblTitle.Lines = 0;
         sv.AddArrangedSubview(LblTitle);
 
