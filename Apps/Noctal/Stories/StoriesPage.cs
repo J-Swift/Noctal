@@ -16,7 +16,6 @@ using Orientation = Android.Widget.Orientation;
 #elif IOS
 using CoreGraphics;
 using Foundation;
-using Noctal.UI.Theming;
 using ObjCRuntime;
 using System.Collections.Specialized;
 using System.Runtime.InteropServices;
@@ -24,6 +23,7 @@ using System.Runtime.InteropServices;
 using DynamicData.Binding;
 using Noctal.ImageLoading;
 using Noctal.Stories.Models;
+using Noctal.UI.Theming;
 using ReactiveUI;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -57,6 +57,8 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
     {
         public static readonly Color CellHighlightLt = Color.FromRgb(180, 215, 250);
         public static readonly Color CellHighlightDk = Color.FromRgb(28, 104, 185);
+        public static readonly double FontSizeDefault = 17;
+        public static readonly double FontSizeTitle = 20;
     }
 }
 
@@ -151,6 +153,11 @@ internal class MyAdapter : RecyclerView.Adapter
 
         var isNight = AppCompatDelegate.DefaultNightMode == AppCompatDelegate.ModeNightYes;
 
+        var makeLabel = () => new NoctalLabel(context)
+        {
+            TextSize = (float)StoriesPage.Styling.FontSizeDefault,
+        };
+
         var csl = new ColorStateList(new[]
             {
                 new int[]
@@ -196,10 +203,8 @@ internal class MyAdapter : RecyclerView.Adapter
         };
         row.SetVerticalGravity(GravityFlags.Center);
 
-        var tv = new NoctalLabel(context)
-        {
-            Id = LblArticleNumberId,
-        };
+        var tv = makeLabel();
+        tv.Id = LblArticleNumberId;
         row.AddView(tv);
 
         var spacer = new View(context);
@@ -219,10 +224,10 @@ internal class MyAdapter : RecyclerView.Adapter
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context)
-        {
-            Id = LblUrlId,
-        };
+        tv = makeLabel();
+        tv.Id = LblUrlId;
+        // TODO(jpr): extract theme from activity
+        tv.SetTextColor((isNight ? new DarkTheme() as ITheme : new LightTheme() as ITheme).PrimaryColor.ToPlatform());
         tv.SetAutoSizeTextTypeWithDefaults(AutoSizeTextType.Uniform);
         tv.SetMaxLines(1);
         row.AddView(tv);
@@ -231,10 +236,9 @@ internal class MyAdapter : RecyclerView.Adapter
 
         // Title Row
 
-        tv = new NoctalLabel(context)
-        {
-            Id = LblTitleId,
-        };
+        tv = makeLabel();
+        tv.TextSize = (float)StoriesPage.Styling.FontSizeTitle;
+        tv.Id = LblTitleId;
 
         spacer = new View(context);
         sv.AddView(spacer, dimVSpacerPs);
@@ -247,31 +251,25 @@ internal class MyAdapter : RecyclerView.Adapter
             Orientation = Orientation.Horizontal,
         };
 
-        tv = new NoctalLabel(context)
-        {
-            Id = LblAuthorId,
-            Ellipsize = TextUtils.TruncateAt.End,
-        };
+        tv = makeLabel();
+        tv.Id = LblAuthorId;
+        tv.Ellipsize = TextUtils.TruncateAt.End;
         tv.SetMaxLines(1);
         row.AddView(tv);
 
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context)
-        {
-            Text = "•",
-        };
+        tv = makeLabel();
+        tv.Text = "•";
         row.AddView(tv);
 
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context)
-        {
-            Id = LblTimeAgoId,
-            Ellipsize = TextUtils.TruncateAt.End,
-        };
+        tv = makeLabel();
+        tv.Id = LblTimeAgoId;
+        tv.Ellipsize = TextUtils.TruncateAt.End;
         tv.SetMaxLines(1);
         row.AddView(tv);
 
@@ -286,29 +284,23 @@ internal class MyAdapter : RecyclerView.Adapter
             Orientation = Orientation.Horizontal,
         };
 
-        tv = new NoctalLabel(context)
-        {
-            Id = LblScoreId,
-        };
+        tv = makeLabel();
+        tv.Id = LblScoreId;
         row.AddView(tv);
 
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context)
-        {
-            Text = "•",
-        };
+        tv = makeLabel();
+        tv.Text = "•";
         row.AddView(tv);
 
         spacer = new View(context);
         row.AddView(spacer, dimHSpacerPs);
 
-        tv = new NoctalLabel(context)
-        {
-            Id = LblNumCommentsId,
-            Text = "•",
-        };
+        tv = makeLabel();
+        tv.Id = LblNumCommentsId;
+        tv.Text = "•";
         row.AddView(tv);
 
         spacer = new View(context);
@@ -625,9 +617,14 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         ImageLoader = ServiceProvider.GetService<IImageLoader>();
         _configuration = configuration;
 
-        var makeLabel = () => new NoctalLabel
+        var makeLabel = () =>
         {
-            TranslatesAutoresizingMaskIntoConstraints = false,
+            var lbl = new NoctalLabel
+            {
+                TranslatesAutoresizingMaskIntoConstraints = false,
+            };
+            lbl.Font = lbl.Font.WithSize((NFloat)StoriesPage.Styling.FontSizeDefault);
+            return lbl;
         };
 
         // ImgImage = new UIImageView { TranslatesAutoresizingMaskIntoConstraints = false, ClipsToBounds = true, ContentMode = UIViewContentMode.ScaleAspectFill, BackgroundColor = Colors.Red.WithAlpha(0.3f).ToPlatform() };
@@ -676,6 +673,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
 
         lbl = makeLabel();
         lbl.AdjustsFontSizeToFitWidth = true;
+        lbl.TextColor = SceneDelegate.Theme.PrimaryColor;
         LblUrl = lbl;
         row.AddArrangedSubview(lbl);
 
@@ -684,6 +682,7 @@ internal sealed class StoryFeedView : UIView, IUIContentView
         // Title Row
 
         lbl = makeLabel();
+        lbl.Font = lbl.Font.WithSize((NFloat)StoriesPage.Styling.FontSizeTitle);
         lbl.Lines = 0;
         LblTitle = lbl;
         sv.AddArrangedSubview(lbl);
