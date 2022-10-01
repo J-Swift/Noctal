@@ -330,6 +330,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         // Url Row
 
         var row = makeRow();
+        row.Alignment = UIStackViewAlignment.Center;
 
         ImgFavicon = new UIImageView
         {
