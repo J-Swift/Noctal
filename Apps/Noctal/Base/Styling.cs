@@ -11,9 +11,9 @@ public class LightTheme : ITheme
     public Color ErrorColor { get; } = Colors.Red;
     public Color OnErrorColor { get; } = Colors.White;
 
-    public Color PrimaryColor { get; } = Color.FromRgb(60, 165, 255);
+    public Color PrimaryColor { get; } = Color.FromRgb(29, 124, 243);
     public Color OnPrimaryColor { get; } = Colors.White;
-    public Color SecondaryColor { get; } = Color.FromRgb(230, 135, 104);
+    public Color SecondaryColor { get; } = Color.FromRgb(250, 202, 33);
     public Color OnSecondaryColor { get; } = Colors.White;
 }
 
