@@ -46,7 +46,16 @@ public class ImageLoader : IImageLoader
 #elif IOS
     public void LoadInto(IImageLoader.LoadRequest request)
     {
-        var url = request.UrlPath == null ? null : new NSUrl(request.UrlPath);
+        NSUrl? url = null;
+        try
+        {
+            url = request.UrlPath == null ? null : new NSUrl(request.UrlPath);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"ERROR: couldnt parse url [{request.UrlPath}]");
+        }
+
         ImageCaching.Nuke.ImagePipeline.Shared.LoadImageWithUrl(
             url,
             request.Placeholder,

@@ -10,8 +10,7 @@ public class MetaFetcher : IMetaFetcher
 
     private static readonly Dictionary<string, int> FavIconScoreMappings = new()
     {
-        { "apple-touch-icon", 20 },
-        { "shortcut icon", 10 },
+        { "apple-touch-icon", 20 }, { "shortcut icon", 10 },
     };
 
     public async Task<MetaResult> GetMeta(string urlPath)
@@ -48,17 +47,17 @@ public class MetaFetcher : IMetaFetcher
                         }
 
                         var favIconScore = -1;
+
                         foreach (var parserResult in parser.GetResults())
                         {
                             switch (parserResult)
                             {
                                 case MetaParser.OgImageResult og:
                                     {
-                                        var fullUrl = new Uri(url, og.UrlPath);
-
                                         if (og.OgProperty.ToLowerInvariant() == "og:image")
                                         {
-                                            result = result with { OgImagePath = fullUrl.ToString() };
+                                            var fullUrl = new Uri(url, og.UrlPath);
+                                            result = result with { OgImagePath = fullUrl.AbsoluteUri, };
                                         }
 
                                         break;
@@ -71,7 +70,7 @@ public class MetaFetcher : IMetaFetcher
                                             {
                                                 favIconScore = score;
                                                 var fullUrl = new Uri(url, favIcon.UrlPath);
-                                                result = result with { FavIconPath = fullUrl.ToString() };
+                                                result = result with { FavIconPath = fullUrl.AbsoluteUri, };
                                             }
                                         }
 

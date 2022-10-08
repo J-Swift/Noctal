@@ -9,7 +9,7 @@ public class HNApi : IHNApi
 
     public HNApi()
     {
-        _httpClient = new HttpClient { BaseAddress = new Uri("https://hn.algolia.com") };
+        _httpClient = new HttpClient { BaseAddress = new Uri("https://hn.algolia.com"), };
     }
 
     public async Task<IReadOnlyCollection<Story>> GetStoriesAsync()
