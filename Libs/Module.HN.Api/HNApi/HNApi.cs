@@ -40,7 +40,8 @@ public class HNApi : IHNApi
             DateTimeOffset.Parse(dto.created_at),
             dto.points,
             dto.num_comments,
-            storyType
+            storyType,
+            dto.story_text
         );
     }
 }
@@ -62,4 +63,5 @@ internal class StoryDto
     public string title { get; set; }
     public string url { get; set; }
     public IList<string> _tags { get; set; }
+    public string? story_text { get; set; }
 }

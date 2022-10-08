@@ -1,6 +1,6 @@
 namespace Noctal.Stories.Models;
 
-public record StoriesFeedItem(int Id, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments, string? FavIconPath = null, string? ImagePath = null)
+public record StoriesFeedItem(int Id, string Url, string Title, string Submitter, string TimeAgo, int Score, int NumComments, string? FavIconPath = null, string? ImagePath = null, string? StoryText = null)
 {
     public string? DisplayUrl { get; } = GetDisplayUrl(Url);
     public string? PlaceholderLetter { get; } = GetPlaceholderLetter(Url);

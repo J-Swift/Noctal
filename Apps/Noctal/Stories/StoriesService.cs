@@ -88,7 +88,8 @@ public class StoriesService
             story.Author,
             ToTimeAgo(story.CreatedAt),
             story.Score,
-            story.NumComments
+            story.NumComments,
+            StoryText: story.StoryText
         );
     }
 
