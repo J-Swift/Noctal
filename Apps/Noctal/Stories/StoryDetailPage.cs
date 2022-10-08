@@ -43,8 +43,8 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
     internal static class Styling
     {
-        public static readonly double FontSizeDefault = 17;
-        public static readonly double FontSizeTitle = 20;
+        public static readonly double FontSizeDefault = 19;
+        public static readonly double FontSizeTitle = 21;
     }
 }
 

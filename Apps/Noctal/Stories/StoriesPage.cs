@@ -57,8 +57,8 @@ public partial class StoriesPage : BasePage<StoriesViewModel>
     {
         public static readonly Color CellHighlightLt = Color.FromRgb(180, 215, 250);
         public static readonly Color CellHighlightDk = Color.FromRgb(28, 104, 185);
-        public static readonly double FontSizeDefault = 17;
-        public static readonly double FontSizeTitle = 20;
+        public static readonly double FontSizeDefault = 19;
+        public static readonly double FontSizeTitle = 21;
     }
 }
 
