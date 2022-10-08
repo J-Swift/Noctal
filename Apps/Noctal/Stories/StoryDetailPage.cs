@@ -7,12 +7,14 @@ using System.Reactive.Disposables;
 using AndroidX.AppCompat.App;
 using Android.Content;
 using Android.OS;
+using Android.Text;
 using Android.Views;
 using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
 using AndroidX.Navigation;
 using Google.Android.Material.Shape;
 using Google.Android.Material.ImageView;
+
 #elif IOS
 using Foundation;
 #endif
@@ -62,6 +64,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private ImageView ImgFavicon { get; set; } = null!;
     private ImageView ImgImage { get; set; } = null!;
     private ViewGroup ImgImageWrapper { get; set; } = null!;
+    private NoctalLabel LblBody { get; set; } = null!;
 
     public static (int DestId, Bundle DestArgs) SafeNav(NavController nav, int storyId)
     {
@@ -87,6 +90,19 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         this.OneWayBind(SafeViewModel, vm => vm.Item!.Submitter, v => v.LblAuthor.Text)
             .DisposeWith(disposables);
         this.OneWayBind(SafeViewModel, vm => vm.Item!.TimeAgo, v => v.LblTimeAgo.Text)
+            .DisposeWith(disposables);
+        SafeViewModel.WhenAnyValue(vm => vm.Item!.StoryText)
+            .Subscribe(it =>
+            {
+                LblBody.Visibility = it == null ? ViewStates.Gone : ViewStates.Visible;
+
+                if (it == null)
+                {
+                    return;
+                }
+
+                LblBody.Text = Html.FromHtml(it, FromHtmlOptions.ModeLegacy)!.ToString();
+            })
             .DisposeWith(disposables);
         SafeViewModel.WhenAnyValue(vm => vm.Item!.FavIconPath)
             .Subscribe(it =>
@@ -157,12 +173,12 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         // Url Row
 
         var row = makeRow();
+        row.SetGravity(GravityFlags.CenterVertical);
 
         var shapeModel = new ShapeAppearanceModel().ToBuilder()
             .SetAllCornerSizes(new RelativeCornerSize(0.5f))
             .Build();
 
-        // ImgFavicon = new View(context) { Background = shape };
         ImgFavicon = new ShapeableImageView(context)
         {
             ShapeAppearanceModel = shapeModel,
@@ -207,6 +223,12 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         sv.AddView(ImgImageWrapper, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent));
         ((LinearLayout.LayoutParams)ImgImageWrapper.LayoutParameters!).BottomMargin = (int)_dimVPadding;
+
+        // Body Row
+
+        LblBody = makeLabel();
+        sv.AddView(LblBody);
+        ((LinearLayout.LayoutParams)LblBody.LayoutParameters!).BottomMargin = (int)_dimVPadding;
 
         // Author Row
 
