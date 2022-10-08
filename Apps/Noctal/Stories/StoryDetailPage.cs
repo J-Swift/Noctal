@@ -13,8 +13,8 @@ using AndroidX.ConstraintLayout.Widget;
 using AndroidX.Navigation;
 using Google.Android.Material.Shape;
 using Google.Android.Material.ImageView;
-
 #elif IOS
+using Foundation;
 #endif
 
 namespace Noctal.Stories;
@@ -260,6 +260,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     private NoctalLabel LblTimeAgo { get; set; } = null!;
     private UIImageView ImgFavicon { get; set; } = null!;
     private UIImageView ImgImage { get; set; } = null!;
+    private NoctalLabel LblBody { get; set; } = null!;
 
     protected override void BindView(CompositeDisposable disposables)
     {
@@ -272,6 +273,33 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         this.OneWayBind(SafeViewModel, vm => vm.Item!.Submitter, v => v.LblAuthor.Text)
             .DisposeWith(disposables);
         this.OneWayBind(SafeViewModel, vm => vm.Item!.TimeAgo, v => v.LblTimeAgo.Text)
+            .DisposeWith(disposables);
+        SafeViewModel.WhenAnyValue(vm => vm.Item!.StoryText)
+            .Subscribe(it =>
+            {
+                LblBody.Hidden = it == null;
+
+                if (it == null)
+                {
+                    return;
+                }
+
+                // Cache these so we can use them again after setting attributed string
+                // since iOS removes them...
+                var font = LblBody.Font;
+                var textColor = LblBody.TextColor;
+
+                var data = new NSString(it).Encode(NSStringEncoding.UTF8);
+                var options = new NSAttributedStringDocumentAttributes
+                {
+                    DocumentType = NSDocumentType.HTML, StringEncoding = NSStringEncoding.UTF8,
+                };
+                NSError e = null!;
+                LblBody.AttributedText = new NSAttributedString(data, options.Dictionary, out _, ref e);
+
+                LblBody.Font = font;
+                LblBody.TextColor = textColor;
+            })
             .DisposeWith(disposables);
         SafeViewModel.WhenAnyValue(vm => vm.Item!.FavIconPath)
             .Subscribe(it =>
@@ -295,10 +323,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
     {
         var makeLabel = () =>
         {
-            var lbl = new NoctalLabel
-            {
-                TranslatesAutoresizingMaskIntoConstraints = false,
-            };
+            var lbl = new NoctalLabel { TranslatesAutoresizingMaskIntoConstraints = false, };
             lbl.Font = lbl.Font.WithSize((nfloat)Styling.FontSizeDefault);
             return lbl;
         };
@@ -309,10 +334,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
             Spacing = (nfloat)Dims.DimHPaddingRow,
         };
 
-        var scroll = new UIScrollView
-        {
-            BackgroundColor = SceneDelegate.Theme.BackgroundColor,
-        };
+        var scroll = new UIScrollView { BackgroundColor = SceneDelegate.Theme.BackgroundColor, };
 
         var sv = new UIStackView
         {
@@ -363,6 +385,12 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
         ImgImage.WidthAnchor.ConstraintEqualTo(sv.WidthAnchor).Active = true;
         ImgImage.HeightAnchor.ConstraintEqualTo(ImgImage.WidthAnchor, (nfloat)Dims.DimImgHeightRatio).Active = true;
 
+        // Body Row
+
+        LblBody = makeLabel();
+        LblBody.Lines = 0;
+        sv.AddArrangedSubview(LblBody);
+
         // Author Row
 
         row = makeRow();
@@ -389,10 +417,7 @@ public partial class StoryDetailPage : BasePage<StoryDetailViewModel>
 
         sv.AddArrangedSubview(row);
 
-        var svWrapper = new UIView
-        {
-            TranslatesAutoresizingMaskIntoConstraints = false,
-        };
+        var svWrapper = new UIView { TranslatesAutoresizingMaskIntoConstraints = false, };
         svWrapper.AddSubview(sv);
         scroll.AddSubview(svWrapper);
 
